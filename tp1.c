@@ -14,28 +14,22 @@
 #define FALSE 0
 
 typedef struct Digit {
-    char value;
+    int value;
     struct Digit *next;
+    struct Digit *previous;
 } Digit;
 
-typedef struct Num {
+typedef struct Number {
     int sign;  // 0 : negative  1 : positive
     struct Digit *last; // pointer to the least significant digit
-    struct Num *next; // pointer to the element below on the stack
+    struct Number *next; // pointer to the element below on the stack
     int nb_ref; // number of variables who refere to that number
-} Num;
+} Number;
 
 typedef struct Stack {
-    struct Num *top = NULL;
-    int nb_elem = 0;
-} Stack
-
-
-void push(Stack *s, Num *a) {
-    a->next = s->top;
-    s->top = a;
-    s->nb_elem++;
-}
+    struct Number *top; 
+    int nb_elem;  
+} Stack;
 
 typedef enum State {
     INIT,
@@ -44,95 +38,68 @@ typedef enum State {
     EQUAL
 } State;
 
-num* pop(Stack *s) {
+
+void push(Stack *s, Number *a)
+{
+    a->next = s->top;
+    s->top = a;
+    s->nb_elem++;
+}
+
+Number* pop(Stack *s)
+{
     if (s->nb_elem == 0)
         return NULL;
     else {
-        Num *n = s->top;
+        Number *n = s->top;
         s->top = s->top->next;
         s->nb_elem--;
         return n;
     }
 }
 
-void emptyStack(Stack *s) {
+void emptyStack(Stack *s)
+{
     while (s->nb_elem > 0)
         pop(s);
 }
 
-/*
- * Fonction qui ajoute un nouveau chiffre non initialisé après celui entré en argument
- * return 0 si l'opération a échoué et 1 sinon
- */
-int ajouteCell(cell *a, int val) {
-    cell *nouveau = malloc(sizeof(cell));
-    if (nouveau == NULL)
-        return 0;
-    else {
-        a->suivant = nouveau;
-        nouveau->precedent = a;
-        nouveau->suivant = NULL;
-        nouveau->chiffre = val;
-    }
-    
-    return 1;
-}
-
-/*
- * Efface un nombre
- */
-void efface(num *nombre) {
-    if (nombre == NULL)
+void printNumber(Number *number) {
+    if (number == NULL)
         return;
-    else if (nombre->chiffre == NULL) {
-        free(nombre);
-        return;
-    }
-    else {
-        cell *p, *q;
-        p = nombre->chiffre;
-        free(nombre);
-        
-        while (p != NULL){
-            q = p->suivant;
-            free(p);
-            p = q;
-        }
+    Digit *d = number->last;
     
-    }
+    while (d->next != NULL)
+        d = d->next;
     
-    return;
-}
-
-/*
- * Affiche un nombre
- */
-void affiche (num *nombre) {
-    if (nombre == NULL)
-        return;
-    cell *c = nombre->chiffre;
-    
-    while(c->suivant != NULL)
-        c = c->suivant;
-    
-    if (nombre->positif == false)
+    if (number->sign == 0)
         printf("-");
         
-    while (c != NULL) {
-        printf("%d",c->chiffre);
-        c = c->precedent;    
+    while (d != NULL) {
+        printf("%d",d->value);
+        d = d->previous;
     }
     
     printf("\n");
     
 }
 
+int has_more_digit(Number *n1, Number *n2)
+{
+    //TODO
+    while ((n1->next != NULL) && (n2->next != NULL)) {
+        n1 = n1->next;
+        n2 = n2->next;
+    }
+
+    if (n1->next == NULL && n2->next == NULL)
+        return 0;
+}
 /*
  * procédure qui évalue si a est plus petit que b
  * retourne true si a < b, false sinon
  * on considère que a et b sont positif
- */
-int estPlusPetit(num *a, num *b) {
+int estPlusPetit(Number *a, Number *b) {
  
         cell *c1 = a->chiffre, *c2 = b->chiffre;
         if (c1->suivant == NULL && c1->suivant == NULL) //si a et b n'ont qu'un chiffre
@@ -167,6 +134,7 @@ int estPlusPetit(num *a, num *b) {
         return false; //ils sont égaux
       
 }
+*/
 
 
 //retourne true si a est zero
