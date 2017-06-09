@@ -13,12 +13,16 @@
 #define TRUE 1
 #define FALSE 0
 
+// a structure for digits in a number
+// the next pointer point to the next more significant digit
+// the previous pointer point to the next less significant digit
 typedef struct Digit {
     int value;
     struct Digit *next;
     struct Digit *previous;
 } Digit;
 
+// Represent a number in the stack
 typedef struct Number {
     int sign;  // 0 : negative  1 : positive
     struct Digit *last; // pointer to the least significant digit
@@ -38,7 +42,25 @@ typedef enum State {
     EQUAL
 } State;
 
+typedef enum token_type {
+    NUMBER,
+    PLUS,
+    MINUS,
+    MULTIPLY,
+    AFFECTATION,
+    VARIABLE
+} token_type;
 
+typedef struct Token {
+    token_type type;
+    union {
+        Number* num;
+        char variable;
+    };
+} Token;
+
+
+// Stack functions BEGIN
 void push(Stack *s, Number *a)
 {
     a->next = s->top;
@@ -58,10 +80,54 @@ Number* pop(Stack *s)
     }
 }
 
-void emptyStack(Stack *s)
+void empty_stack(Stack *s)
 {
-    while (s->nb_elem > 0)
-        pop(s);
+    Number *num;
+    while (s->nb_elem > 0) {
+        num = pop(s);
+        if (num->nb_ref == 0)
+            free(num);
+    }
+}
+
+// NOTE: return -1 on error
+int add(Stack *stack)
+{
+}
+
+int sub(Stack *stack)
+{
+}
+
+int mul(Stack *stack)
+{
+}
+
+void assignment(char variable, Number *num) 
+{
+}
+
+// Stack functions END
+
+Number* create_number()
+{
+    Number *num = malloc(sizeof(Number));
+    num->sign = 1;
+    num->last = NULL;
+    num->next = NULL;
+    num->nb_ref = 0;
+}
+
+void delete_number(Number *num)
+{
+    Digit *digit = num->last;
+    Digit *next;
+    while (digit != NULL) {
+        next = digit->next;
+        free(digit);
+        digit = next;
+    }
+    free(num);
 }
 
 void printNumber(Number *number) {
@@ -81,467 +147,28 @@ void printNumber(Number *number) {
     }
     
     printf("\n");
-    
 }
 
-int has_more_digit(Number *n1, Number *n2)
+Digit* create_digit(int value, Digit *next, Digit *previous)
 {
-    //TODO
-    while ((n1->next != NULL) && (n2->next != NULL)) {
-        n1 = n1->next;
-        n2 = n2->next;
-    }
-
-    if (n1->next == NULL && n2->next == NULL)
-        return 0;
-}
-/*
- * procédure qui évalue si a est plus petit que b
- * retourne true si a < b, false sinon
- * on considère que a et b sont positif
-int estPlusPetit(Number *a, Number *b) {
- 
-        cell *c1 = a->chiffre, *c2 = b->chiffre;
-        if (c1->suivant == NULL && c1->suivant == NULL) //si a et b n'ont qu'un chiffre
-            return (c1->chiffre < c2->chiffre);
-        else if (c1->suivant == NULL)
-            return true;
-                
-        while (c1->suivant != NULL) {
-            
-            if (c2->suivant == NULL)
-                return false;
-            else {
-                c1 = c1->suivant;
-                c2 = c2->suivant;
-            }
-        }
-        
-        if (c2->suivant != NULL)
-            return true;
-            
-        while (c1->precedent != NULL) {
-            if (c1->chiffre != c2->chiffre)
-                if (c1->chiffre < c2->chiffre)
-                    return true; 
-                else
-                    return false;
-            c1 = c1->precedent;
-            c2 = c2->precedent;
-            
-        }
-        
-        return false; //ils sont égaux
-      
-}
-*/
-
-
-//retourne true si a est zero
-int estZero(num *a) {
-    return (a->chiffre->chiffre == 0) && (a->chiffre->suivant == NULL);
-}
-/*
- * procédure qui additionne deux nombres a et b positifs
- * on additionne les nombre un à un et on ajoute les retenues
- * retourne NULL si la mémoire est insuffisante
- */
-num* addP(num *a, num *b) {
-   
-    int retenue = 0, s = 0;
-    num *somme = malloc(sizeof(num));
-    if (somme == NULL)
-        return NULL;
-    somme->positif = a->positif; 
-    somme->chiffre = malloc(sizeof(cell));
-    if (somme->chiffre == NULL)
-        return NULL;
-    
-    //c1 est le chiffre du premier nombre, c2 le chiffre du deuxième nombre et cs le chiffre du nombre somme
-    cell *c1 = a->chiffre, *c2 = b->chiffre, *cs = somme->chiffre;
-    
-    while(!(c1 == NULL && c2 == NULL)) { // tant que il reste des chiffres à additionner
-        
-        if (c1 == NULL && c2 != NULL) {
-            s = (c2->chiffre) + retenue;
-            c2 = c2->suivant;
-        
-        }
-        else if(c1 != NULL && c2 == NULL) {
-            s = (c1->chiffre) + retenue;
-            c1 = c1->suivant;
-        
-        }
-        else {
-            s = (c1->chiffre) + (c2->chiffre) + retenue;
-            c1 = c1->suivant;
-            c2 = c2->suivant;
-        
-        }    
-        
-        if (s > 9) retenue = 1;
-        else retenue = 0;
-        
-        cs->chiffre = s%10;
-        ajouteCell(cs,0);
-        cs = cs->suivant;
-    }
-    
-    if (retenue)
-        cs->chiffre = 1;
-    else {
-        cs->precedent->suivant = NULL;
-        cs->precedent = NULL;
-        free(cs);
-    }  
-    return somme;
+    Digit *digit = malloc(sizeof(Digit));
+    digit->value = value;
+    digit->next = next;
+    digit->previous = previous;
+    return digit;
 }
 
 
-void inverseSigne(num *n) {
-    if (n->positif == true)
-        n->positif = false;
-    else
-        n->positif = true;
-}
-
-/*
- * procédure qui soustrait deux nombres a et b positifs et tel que a>b
- */
-num* subP(num *a, num *b) {
-
-    int d = 0, retenue = 0;
-    num *difference = malloc(sizeof(num));
-    if (difference == NULL)
-        return NULL;
-    difference->positif = true;
-    difference->chiffre = malloc(sizeof(cell));
-    if (difference->chiffre == NULL)
-        return NULL;
-        
-    cell *c1 = a->chiffre, *c2 = b->chiffre, *cd = difference->chiffre;
-    
-    while(c1 != NULL) { // tant que il reste des chiffres à soustraire
-        if ( c2 == NULL){
-            cd->chiffre = (c1->chiffre) -retenue;
-            retenue = 0;
-        }
-        else {
-            if (c1->chiffre >= c2->chiffre + retenue) {
-                cd->chiffre = (c1->chiffre) - ((c2->chiffre) + retenue);
-                retenue = 0;
-            }
-            else {
-                cd->chiffre = 10 + (c1->chiffre) - (c2->chiffre + retenue);
-                retenue = 1;
-            }
-            c2 = c2->suivant;
-    
-        }
-        
-        ajouteCell(cd,0);
-        cd = cd->suivant;
-        c1 = c1->suivant;
-        
-    }
-    cd->precedent->suivant = NULL;
-    cd->precedent = NULL;
-    free(cd);
-    
-    
-    return difference;
-}
-
-
-
-//additionne deux nombres quelconques
-num* add(num *a, num *b) {
-    
-    if (estZero(a))  //si a est zéro
-        return b;
-    else if (estZero(b)) //si b est zéro
-        return a;
-    else if (a->positif == true && b->positif == false) //si a est positif et b négatif
-        if (estPlusPetit(a,b)) {
-            num *r = subP(b,a);
-            r->positif = false;
-            return r;
-        }
-        else
-            return subP(a,b);
-            
-    else if (a->positif == false && b->positif == true) { //si a est négatif et b positif
-     if (estPlusPetit(b,a)) {
-            num *r = subP(a,b);
-            r->positif = false;
-            return r;
-        }
-        else
-            return subP(b,a);
-     }
-    else if (a->positif == true) { //si ils sont positifs
-        return addP(a,b);
-    }
-    else { //si a et b sont négatifs  
-        num *r = addP(a,b);
-        r->positif = false;
-        return r;
-    }   
-}
-
-num* sub(num *a, num *b) {
-    
-    if (estZero(a)) { //si a est zéro
-        inverseSigne(b);
-        return b;
-    }
-    else if (estZero(b)) //si b est zéro
-        return a;
-    else if (a->positif == true && b->positif == false) //si a est positif et b négatif
-        return add(a,b);
-    else if (a->positif == false && b->positif == true) { //si a est négatif et b positif
-        num *r = add(a,b);
-        r->positif = false;
-        return r;   
-    }
-    else if (a->positif == true) { //si ils sont positifs
-        if (estPlusPetit(a,b)) { //si a<b
-            num *r = subP(b,a);
-            r->positif = false;
-            return r;
-        }
-        else
-            return subP(a,b);
-    }
-    else { //si a et b sont négatifs alors on calcule |b|-|a|
-        if (estPlusPetit(b,a)) { //si |b|<|a|
-            num *r = subP(a,b);
-            r->positif = false;
-            return r;
-        }
-        else  {
-            num *r = subP(b,a);
-            r->positif = true;
-            return r;
-        }
-    }    
-}
-
-/*
- * Fonction qui multiplie un nombre a par un chiffre ch
- */
-num* mulChiffre(num *a, int ch) {
-    int retenue = 0, r;
-    num *p = malloc(sizeof(num));
-    p->positif = true;
-    p->chiffre = malloc(sizeof(cell));
-    cell *c = a->chiffre, *cp = p->chiffre;
-    
-    r = ch*(c->chiffre) + retenue;
-    cp->chiffre = r%10;
-    retenue = r/10;
-    
-    while(c->suivant != NULL) {
-        c = c->suivant;
-        r = ch*(c->chiffre) + retenue;
-        ajouteCell(cp,r%10);
-        retenue = r/10;
-        cp = cp->suivant;
-    }
-    
-    if (retenue)
-        ajouteCell(cp,retenue);
-        
-    return p;
-}
-
-/*
- * Fonction qui ajoute les chiffres de b à a, ex:a=12345 b=6789 alors
- * a=123456789 et b n'est pas modifier
- */
-void ajouteChiffres(num *a, num *b) {
-    cell *c = b->chiffre;
-    cell *r = malloc(sizeof(cell));
-    cell *debut =r;
-    
-    while(c != NULL) {
-        r->chiffre = c->chiffre;
-        ajouteCell(r,0);
-        c = c->suivant;
-        r = r->suivant;
-    }
-    
-    r->suivant = a->chiffre;
-    a->chiffre->precedent = r;
-    a->chiffre = debut;
-    return;
-}
-
-/*
- * procédure qui multiplie deux nombres a et b
- */
-num *mul(num *a, num *b) { 
-
-    num *produit = malloc(sizeof(num));
-    produit->positif = true;
-    produit->chiffre = malloc(sizeof(cell));
-    num *zero = malloc(sizeof(num));
-    zero->chiffre = malloc(sizeof(cell));
-    zero->chiffre->chiffre = 0;
-    
-   
-              
-    //on initialise un nombre
-    num  *p, *q ;
-    produit = mulChiffre(a,b->chiffre->chiffre);
-    
-    cell *c = b->chiffre->suivant;
-    
-    while (c != NULL) {
-        p = mulChiffre(a,c->chiffre);
-        ajouteChiffres(p,zero); //on ajoute les zéro à la fin du nombre
-        q = addP(produit,p);
-        efface(p);
-        produit = q;
-        c = c->suivant;
-        
-        // on ajoute un 0 à zero
-        cell *n = malloc(sizeof(cell));
-        n->chiffre = 0;
-        n->suivant = zero->chiffre;
-        zero->chiffre = n;
-    }
-    
-   if (a->positif == b->positif) // si a est positif et b négatif
-        produit->positif = true;
-   else
-        produit->positif = false;
-   
-    efface(zero);
-    return produit;
-}
-
-
-
-num* stockeNombre(char* s, int debut, int fin) {
-    //prend en argument une chaine de caractère constitué uniquement de chiffre sans espace et retourne un pointeur vers un num
-    //qui represente ce chiffre
-    int i = fin - 1;
-    num *nombre = malloc(sizeof(num));
-    if (s[debut] == '-') {
-        nombre->positif = false;
-        debut += 1;
-    }
-    else
-        nombre->positif = true; 
-    
-    cell *p = malloc(sizeof(cell));
-    nombre->chiffre = p;
-    p->chiffre = s[fin] - 48;
-    while (i >= debut) {
-        ajouteCell(p, s[i] - 48);
-        p = p->suivant;
-        i--;
-    }
-    
-    return nombre;
-    
-}
-
-int estNombre(char* s, int debut, int fin) {
-    int valide = true;
-    int i;
-    for (i = debut; i < fin; i++)
-        if ( s[i] < '0' ||  s[i]> '9') 
-            valide = false;
- 
-    return valide;
-}
-
-
-
-void traitement_chaine(char *s, int taille) {
-    //traite une chaine entré par l'utilisateur
-    char c = s[0];
-    int i = 0, j; //i est l'indice ou on est dans la chaine
-    num *v1, *v2;
-    pile *p = creePile();
-    
-    while (i < taille) {
-        j = prochainEspace(s,i,taille);
-    
-        if (s[i] == '+') {
-            
-            v1 = pop(p);
-            v2 = pop(p);
-            push(p,add(v1,v2));
-           
-        }
-        else if (s[i] == '-') {
-            v1 = pop(p);
-            v2 = pop(p);
-            push(p,sub(v1,v2));
-        }
-        else if (s[i] == '*') {
-            v1 = pop(p);
-            v2 = pop(p);
-            push(p,mul(v1,v2));
-        }
-         
-        else if (estNombre(s, i, j)) {
-            v1 = stockeNombre(s,i,j-1);
-            push(p,v1);
-        }
-        else {
-            printf("Erreur entré non valide\n");
-            return;
-        }
-        
-        i = prochainCaractere(s,j,taille);
-    
-        if (j == -1) {
-            affiche(pop(p));
-            return;
-        } 
-         
-    }
-    
-    affiche(pop(p));
-    return;
-}
-
-
-
-int prochainEspace(char* s ,int i, int taille) {
-    //retourne l'indice du debut du prochain espace d'une chaine de caractère à partir de la ième lettre
-    //retourne -1 si on atteint la fin de la chaine
-    while( i < taille)
-        if (s[i] == ' ' || s[i] == '\n')
-            return i;
-        else
-            i++;
-    
-    return -1;
-}
-
-int prochainCaractere(char* s ,int i, int taille) {
-    //retourne l'indice du debut du prochain caractère d'une chaine de caractère à partir de la ième lettre
-    //retourne -1 si on atteint la fin de la chaine
-    while( i < taille)
-        if (s[i] != ' ' && s[i] != '\n')
-            return i;
-        else
-            i++;
-    
-    return -1;
-}
-
-int isDigit(int c) {
+int is_digit(int c) {
     return (c >= '0') && (c <= '9');
 }
 
-int isLowLetter(int c) {
+int is_lower_case(int c) {
     return (c >= 'a') && (c <= 'z');
+}
+
+void next_token()
+{
 }
 
 int main() {
@@ -549,10 +176,10 @@ int main() {
     int c;
     State state;
     Stack stack;
-    Num *n, variables[26];
+    Number *n, variables[26];
     Digit *d;
     
-    s = INIT;
+    state = INIT;
     printf(">");
 
     while ( (c = getchar()) != EOF) {
@@ -563,7 +190,7 @@ int main() {
             continue;
         }
         else if (c == '\n') {
-            printValue(stack.top);
+            //printValue(stack.top);
             emptyStack(&stack);
             state = INIT;
             continue;
@@ -573,7 +200,7 @@ int main() {
             case INIT:
                 if (c == ' ' || c == '\t')
                     break;
-                else if (isDigit(c)) {
+                else if (is_digit(c)) {
                     d = createDigit(c);
                     n = createNumber(d);
                 }
@@ -583,7 +210,7 @@ int main() {
                     substract(&stack);
                 else if (c == '*')
                     multiply(&stack);
-                else if (isLowLetter(c))
+                else if (is_lower_case(c))
                     push(&stack, value(c));
                 else 
                     state = ERROR;       
@@ -594,7 +221,7 @@ int main() {
                     push(&stack, n);
                     state = INIT;
                 }
-                else if (isDigit(c)) {
+                else if (is_digit(c)) {
                     d = createDigit(c);
                     addDigit(n, d);
                 }
@@ -603,9 +230,9 @@ int main() {
                 break;
    
             case EQUAL:
-                if (isLowLetter(c) && (stack.nb_elem == 0))
+                if (is_lower_case(c) && (stack.nb_elem == 0))
                     state = ERROR;
-                else if (isLowLetter(c) && (stack.nb_elem > 0))
+                else if (is_lower_case(c) && (stack.nb_elem > 0))
                     affectation(stack.top, c);
                 else 
                     state = ERROR;
