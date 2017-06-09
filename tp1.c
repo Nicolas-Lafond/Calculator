@@ -87,17 +87,82 @@ void empty_stack(Stack *s)
     }
 }
 
+Digit* add_digits(Digit *digit1, Digit *digit2, int *excess)
+{
+    if (digit1 == NULL && digit2 == NULL) {
+        *excess = 0;
+        return NULL;
+    }
+
+    Digit *sum = malloc(sizeof(Digit));
+    if ((digit1 == NULL) && (digit2 != NULL)) {
+        sum->value = digit2->value + *excess;
+    }
+    else if ((digit1 != NULL) && (digit2 == NULL)) {
+        sum->value = digit1->value + *excess;
+    }
+    else if ((digit1 != NULL) && (digit2 != NULL)) {
+        sum->value = digit1->value + digit2->value + *excess;
+    }
+
+    if (sum->value > 9) {
+        sum->value -= 10;
+        *excess = 1;
+    }
+    else
+        *excess = 0;
+
+    sum->next = NULL;
+    sum->previous = NULL;
+
+    return sum;
+}
+
 // NOTE: return -1 on error
 int add(Stack *stack)
 {
+    if (stack->nb_elem < 2)
+        return -1;
+
+    Number *num1 = stack->top;
+    Number *num2 = stack->top->next;
+    Number *sum = malloc(sizeof(Number));
+
+    Digit *digit1, *digit2, *digit_sum, *current_digit;
+    int excess = 0;
+
+    digit1 = num1->last;
+    digit2 = num2->last;
+
+    // this code is a bit ugly, should probably refactor
+    digit_sum = add_digits(digit1, digit2, &excess);
+    sum->last = digit_sum;
+    digit1 = digit1->next;
+    digit2 = digit2->next;
+    current_digit = digit_sum;
+
+    while ((digit1 != NULL) || (digit2 != NULL)) {
+        digit_sum = add_digits(digit1, digit2, &excess);
+        digit_sum->previous = current_digit;
+        current_digit->next = digit_sum;
+        digit1 = digit1->next;
+        digit2 = digit2->next;
+        current_digit = digit_sum;
+    }
+
+    return 0;
 }
 
 int sub(Stack *stack)
 {
+    if (stack->nb_elem < 2)
+        return -1;
 }
 
 int mul(Stack *stack)
 {
+    if (stack->nb_elem < 2)
+        return -1;
 }
 
 void assignment(char variable, Number *num) 
