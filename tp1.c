@@ -35,28 +35,25 @@ typedef struct Stack {
     int nb_elem;  
 } Stack;
 
-typedef enum State {
-    INIT,
-    DIGIT,
-    ERROR,
-    EQUAL
-} State;
 
 typedef enum token_type {
     NUMBER,
     PLUS,
     MINUS,
     MULTIPLY,
-    AFFECTATION,
-    VARIABLE
+    ASSIGNMENT,
+    VARIABLE,
+    CARRIAGE_RETURN,
+    END_OF_FILE,
+    ERROR
 } token_type;
 
 typedef struct Token {
     token_type type;
     union {
-        Number* num;
-        char variable;
-    };
+        Number* num;   // if type == NUMBER
+        char variable; // if type == VARIABLE or ASSIGNMENT
+    } data;
 } Token;
 
 
@@ -107,6 +104,10 @@ void assignment(char variable, Number *num)
 {
 }
 
+Number* variable_value(char variable)
+{
+}
+
 // Stack functions END
 
 Number* create_number()
@@ -130,7 +131,7 @@ void delete_number(Number *num)
     free(num);
 }
 
-void printNumber(Number *number) {
+void print_number(Number *number) {
     if (number == NULL)
         return;
     Digit *d = number->last;
@@ -167,83 +168,83 @@ int is_lower_case(int c) {
     return (c >= 'a') && (c <= 'z');
 }
 
-void next_token()
+Token next_token()
 {
+}
+
+void goto_next_line()
+{
+    char c = getchar();
+    while (c != '\n')
+        if (c == EOF)
+            exit(0);
+        else
+            c = getchar();
+}
+
+void calculator(Stack *stack, Number *variables_list[])
+{
+    Token token = next_token();
+    char character;
+
+    while (token.type != END_OF_FILE) {
+        switch(token.type)
+        {
+            case NUMBER:
+                push(stack, token.data.num); 
+                break;
+
+            case PLUS:
+                add(stack);
+                break;
+
+            case MINUS:
+                sub(stack);
+                break;
+
+            case MULTIPLY:
+                mul(stack);
+                break;
+                
+            case ASSIGNMENT:
+                assignment(token.data.variable, stack->top);
+                break;
+
+            case VARIABLE:
+                push(stack,
+                        variable_value(token.data.variable));
+                break;
+
+            case CARRIAGE_RETURN:
+                if (stack->nb_elem == 1)
+                    print_number(stack->top);
+                else
+                    printf("\nErreur, entré non-valide\n");
+                empty_stack(stack);
+                break;
+
+            case ERROR:
+                printf("\nErreur, entré non-valide\n");
+                empty_stack(stack);
+                goto_next_line();
+                break;
+        }
+
+        token = next_token();
+    }
+
+    empty_stack(stack);
+    free(stack);
+    for (int i = 0; i < 26; i++)
+        delete_number(variables_list[i]);
 }
 
 int main() {
 
-    int c;
-    State state;
-    Stack stack;
-    Number *n, variables[26];
-    Digit *d;
-    
-    state = INIT;
-    printf(">");
+    Stack *stack = malloc(sizeof(stack));
+    Number* variables_list[26];
+    calculator(stack, variables_list);
 
-    while ( (c = getchar()) != EOF) {
-        if (c == '\n' && state == ERROR) {
-            printf("error incorrect input\n>");
-            emptyStack(&stack);
-            state = INIT;
-            continue;
-        }
-        else if (c == '\n') {
-            //printValue(stack.top);
-            emptyStack(&stack);
-            state = INIT;
-            continue;
-        }
-
-        switch (state) {
-            case INIT:
-                if (c == ' ' || c == '\t')
-                    break;
-                else if (is_digit(c)) {
-                    d = createDigit(c);
-                    n = createNumber(d);
-                }
-                else if (c == '+')
-                    add(&stack);
-                else if (c == '-')
-                    substract(&stack);
-                else if (c == '*')
-                    multiply(&stack);
-                else if (is_lower_case(c))
-                    push(&stack, value(c));
-                else 
-                    state = ERROR;       
-                break;
-    
-            case DIGIT:
-                if (c == ' ' || c == '\t') {
-                    push(&stack, n);
-                    state = INIT;
-                }
-                else if (is_digit(c)) {
-                    d = createDigit(c);
-                    addDigit(n, d);
-                }
-                else 
-                    state = ERROR;
-                break;
-   
-            case EQUAL:
-                if (is_lower_case(c) && (stack.nb_elem == 0))
-                    state = ERROR;
-                else if (is_lower_case(c) && (stack.nb_elem > 0))
-                    affectation(stack.top, c);
-                else 
-                    state = ERROR;
-                break;    
-         
-            case ERROR:           
-                break;
-        }
-    }
-
-    return 0;	
- 
+    return 0;
 }
 
