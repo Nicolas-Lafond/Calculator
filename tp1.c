@@ -77,6 +77,51 @@ Number* pop(Stack *s)
     }
 }
 
+int exponent(int number, int exp)
+{
+    int value = 1;
+    for (int i = 0; i < exp; i++)
+        value *= number;
+    return value;
+}
+
+Digit* create_digit(int value, Digit *next, Digit *previous)
+{
+    Digit *digit = malloc(sizeof(Digit));
+    digit->value = value;
+    digit->next = next;
+    digit->previous = previous;
+    return digit;
+}
+
+// Create a digit that correspond to the digit at position
+// given at the position specified
+// examble : nth_digit(1234, 1) return 4
+Digit* nth_digit(int number, int position)
+{
+
+    int digit = (number % (exponent(10, position))) / 
+                    (exponent(10, position -1));
+    return create_digit(digit, NULL, NULL);
+
+}
+
+// A small function to easily create a number from an int
+// mostly for testing purposes, we don't assume that the
+// number can be arbitrary long like in the calculator
+Number* create_number_from_int(int num)
+{
+    Number *number = malloc(sizeof(Number));
+    if (num < 0)
+        number->sign = 0;
+    else
+        number->sign = 1;
+
+    int position = 0;
+
+    return number;
+}
+
 void empty_stack(Stack *s)
 {
     Number *num;
@@ -86,6 +131,7 @@ void empty_stack(Stack *s)
             free(num);
     }
 }
+
 
 Digit* add_digits(Digit *digit1, Digit *digit2, int *excess)
 {
@@ -215,14 +261,6 @@ void print_number(Number *number) {
     printf("\n");
 }
 
-Digit* create_digit(int value, Digit *next, Digit *previous)
-{
-    Digit *digit = malloc(sizeof(Digit));
-    digit->value = value;
-    digit->next = next;
-    digit->previous = previous;
-    return digit;
-}
 
 
 int is_digit(int c) {
