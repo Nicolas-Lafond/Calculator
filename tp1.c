@@ -164,15 +164,18 @@ Digit* add_digits(Digit *digit1, Digit *digit2, int *excess)
     return sum;
 }
 
-// NOTE: return -1 on error
-int add(Stack *stack)
-{
-    if (stack->nb_elem < 2)
-        return -1;
+/* Beginning of arithmetic operations section
+ * functions with an underscore as first character that for
+ * granted that both numbers on the stack are positive. They 
+ * are only called by the main arithmetic functions.
+ */
 
-    Number *num1 = stack->top;
-    Number *num2 = stack->top->next;
+// NOTE: return -1 on error
+Number* _add(Number *num1, Number *num2)
+{
+
     Number *sum = malloc(sizeof(Number));
+    sum->sign = 1;
 
     Digit *digit1, *digit2, *digit_sum, *current_digit;
     int excess = 0;
@@ -196,13 +199,46 @@ int add(Stack *stack)
         current_digit = digit_sum;
     }
 
+    return sum;
+}
+
+int add(Stack *stack)
+{
+    if (stack->nb_elem < 2)
+        return -1;
+
+    Number *num1 = stack->top;
+    Number *num2 = stack->top->next;
+    Number *sum;
+
+    if (num1->sign == 1 && num2->sign == 1)
+        sum = _add(num1, num2);
+    else if (num1->sign == 1 && num2->sign == 0)
+        sum = _sub(num1, num2);
+    else if (num1->sign == 0 && num2->sign == 1)
+        sum = _sub(num2, num1);
+    else if (num1->sign == 1 && num2->sign == 1) {
+        sum = _add(num1, num2);
+        sum->sign = 0;
+    }
+
     return 0;
+}
+
+Number* _sub(Number *num1, Number *num2)
+{
+    //TODO
+    return NULL;
 }
 
 int sub(Stack *stack)
 {
     if (stack->nb_elem < 2)
         return -1;
+}
+
+Number* _mul(Number *num1, Number *num2)
+{
 }
 
 int mul(Stack *stack)
