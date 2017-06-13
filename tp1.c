@@ -17,6 +17,12 @@
 #define POSITIVE 1
 #define NEGATIVE 0
 
+/* 
+ * this variable is set to TRUE when a token is read and the
+ * next character read is a carriage return.
+ */
+int end_of_line;
+
 // a structure for digits in a number
 // the next pointer point to the next more significant digit
 // the previous pointer point to the next less significant digit
@@ -92,6 +98,8 @@ int exponent(int number, int exp)
 Digit* create_digit(int value, Digit *next, Digit *previous)
 {
     Digit *digit = malloc(sizeof(Digit));
+    if (digit == NULL)
+        return NULL;
     digit->value = value;
     digit->next = next;
     digit->previous = previous;
@@ -322,16 +330,173 @@ void print_number(Number *number) {
 
 
 
-int is_digit(int c) {
+int is_digit(char c) {
     return (c >= '0') && (c <= '9');
 }
 
-int is_lower_case(int c) {
+int to_digit(char c) {
+    if (!is_digit(c))
+        return -1;
+    else {
+        return c - '0';
+    }
+}
+
+int is_lower_case(char c) {
     return (c >= 'a') && (c <= 'z');
+}
+
+// create a number by reading from stdin
+Number* _read_number(char first_digit)
+{
+    Number *num = malloc(sizeof(Number));
+    num->sign = POSITIVE;
+    num->nb_ref = 0;
+    num->last = create_digit(first_digit, NULL, NULL);
+    Digit *current_digit = num->last;
+    Digit *new_digit;
+
+    char c;
+    int value;
+    while (TRUE) {
+       c = getchar();
+       value = to_digit(c);
+       if (value == -1)
+           if (c == ' ' || c == '\t')
+               return num;
+           else if (c == '\n') {
+               end_of_line = TRUE;
+               return num;
+           }
+           else { // ERROR
+               delete_number(num);
+               return NULL;
+           }
+       else {
+          new_digit = create_digit(c, NULL, current_digit);
+          if (new_digit == NULL) {
+              delete_number(num);
+              return NULL;
+          }
+          current_digit->next = new_digit;
+          current_digit = new_digit;
+       }
+
+    }
 }
 
 Token next_token()
 {
+    Token token;
+    char c;
+
+    // skip blank characters
+    while (c = getchar()) {
+        if (c == ' ' || c == '\t'); 
+        else
+            break;
+    }
+
+    if (is_digit(c)) {
+        Number *num = _read_number(c);
+        if (num == NULL)
+            token.type = ERROR;
+        else
+            token.type = NUMBER;
+    }
+    else if (is_lower_case(c)) {
+        char variable = c;
+        c = getchar();
+        if (c == ' ' || c == '\t') {
+            token.type = VARIABLE;
+            token.data.variable = variable;
+        }
+        else if (c == '\n') {
+            end_of_line = TRUE;
+            token.type = VARIABLE;
+            token.data.variable = variable;
+        }
+        else
+            token.type = ERROR;
+    }
+    else switch(c)
+    {
+        case '+':
+            c = getchar();
+            if (c == ' ' || c == '\t') 
+                token.type = PLUS;
+            else if (c == '\n') {
+                end_of_line = TRUE;
+                token.type = PLUS;
+            }
+            else
+                token.type = ERROR;
+            break;
+        case '-':
+            c = getchar();
+
+            // minus operation
+            if (c == ' ' || c == '\t')
+                token.type = MINUS;
+            else if (c == '\n') {
+                end_of_line = TRUE;
+                token.type = MINUS;
+            }
+
+            // negative number
+            else if (is_digit(c)) {
+                Number *num = _read_number(c);
+                if (num == NULL)
+                    token.type = ERROR;
+                else {
+                    token.type = NUMBER;
+                    num->sign = NEGATIVE;
+                }
+
+
+        case '*':
+            c = getchar();
+            if (c == ' ' || c == '\t') 
+                token.type = MULTIPLY;
+            else if (c == '\n') {
+                end_of_line = TRUE;
+                token.type = MULTIPLY;
+            }
+            else
+                token.type = ERROR;
+            break;
+        case '=':
+            c = getchar();
+            if (is_lower_case(c)) {
+                char variable = c;
+                c = getchar();
+                if (c == ' ' || c == '\t') {
+                    token.type = ASSIGNMENT;
+                    token.data.variable = variable;
+                }
+                else if (c == '\n') {
+                    end_of_line = TRUE;
+                    token.type = ASSIGNMENT;
+                    token.data.variable = variable;
+                }
+                else
+                    token.type = ERROR;
+            }
+            else
+                token.type = ERROR;
+            break;
+        case EOF:
+            token.type = END_OF_FILE;
+            break;
+        case '\n':
+            token.type = CARRIAGE_RETURN;
+            break;
+        default:
+            token.type = ERROR;
+            break;
+    }
+
+    return token;
 }
 
 void goto_next_line()
