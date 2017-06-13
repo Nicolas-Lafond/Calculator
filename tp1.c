@@ -13,6 +13,10 @@
 #define TRUE 1
 #define FALSE 0
 
+// Constants for the sign of numbers
+#define POSITIVE 1
+#define NEGATIVE 0
+
 // a structure for digits in a number
 // the next pointer point to the next more significant digit
 // the previous pointer point to the next less significant digit
@@ -24,7 +28,7 @@ typedef struct Digit {
 
 // Represent a number in the stack
 typedef struct Number {
-    int sign;  // 0 : negative  1 : positive
+    int sign;  
     struct Digit *last; // pointer to the least significant digit
     struct Number *next; // pointer to the element below on the stack
     int nb_ref; // number of variables who refere to that number
@@ -175,7 +179,7 @@ Number* _add(Number *num1, Number *num2)
 {
 
     Number *sum = malloc(sizeof(Number));
-    sum->sign = 1;
+    sum->sign = POSITIVE;
 
     Digit *digit1, *digit2, *digit_sum, *current_digit;
     int excess = 0;
@@ -202,6 +206,12 @@ Number* _add(Number *num1, Number *num2)
     return sum;
 }
 
+Number* _sub(Number *num1, Number *num2)
+{
+    //TODO
+    return NULL;
+}
+
 int add(Stack *stack)
 {
     if (stack->nb_elem < 2)
@@ -211,30 +221,43 @@ int add(Stack *stack)
     Number *num2 = stack->top->next;
     Number *sum;
 
-    if (num1->sign == 1 && num2->sign == 1)
+    if (num1->sign == POSITIVE && num2->sign == POSITIVE)
         sum = _add(num1, num2);
-    else if (num1->sign == 1 && num2->sign == 0)
+    else if (num1->sign == POSITIVE && num2->sign == NEGATIVE)
         sum = _sub(num1, num2);
-    else if (num1->sign == 0 && num2->sign == 1)
+    else if (num1->sign == NEGATIVE && num2->sign == POSITIVE)
         sum = _sub(num2, num1);
-    else if (num1->sign == 1 && num2->sign == 1) {
+    else if (num1->sign == NEGATIVE && num2->sign == NEGATIVE) {
         sum = _add(num1, num2);
-        sum->sign = 0;
+        sum->sign = NEGATIVE;
     }
 
     return 0;
 }
 
-Number* _sub(Number *num1, Number *num2)
-{
-    //TODO
-    return NULL;
-}
 
 int sub(Stack *stack)
 {
     if (stack->nb_elem < 2)
         return -1;
+
+    Number *num1 = stack->top;
+    Number *num2 = stack->top->next;
+    Number *diff;
+
+    if (num1->sign == POSITIVE && num2->sign == POSITIVE)
+        diff = _sub(num1, num2);
+    else if (num1->sign == POSITIVE && num2->sign == NEGATIVE)
+        diff = _add(num1, num2);
+    else if (num1->sign == NEGATIVE && num2->sign == POSITIVE) {
+        diff = _add(num1, num2);
+        diff->sign = NEGATIVE;
+    }
+    else if (num1->sign == NEGATIVE && num2->sign == NEGATIVE)
+        diff = _sub(num2, num1);
+    
+
+    return 0;
 }
 
 Number* _mul(Number *num1, Number *num2)
