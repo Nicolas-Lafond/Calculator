@@ -7,64 +7,13 @@
  * addition, substraction and multiplication are supported but not division
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#define TRUE 1
-#define FALSE 0
-
-// Constants for the sign of numbers
-#define POSITIVE 1
-#define NEGATIVE 0
-
+#include "calculator.h"
 /* 
  * this variable is set to TRUE when a token is read and the
  * next character read is a carriage return.
  */
 int end_of_line;
 
-// a structure for digits in a number
-// the next pointer point to the next more significant digit
-// the previous pointer point to the next less significant digit
-typedef struct Digit {
-    int value;
-    struct Digit *next;
-    struct Digit *previous;
-} Digit;
-
-// Represent a number in the stack
-typedef struct Number {
-    int sign;  
-    struct Digit *last; // pointer to the least significant digit
-    struct Number *next; // pointer to the element below on the stack
-    int nb_ref; // number of variables who refere to that number
-} Number;
-
-typedef struct Stack {
-    struct Number *top; 
-    int nb_elem;  
-} Stack;
-
-
-typedef enum token_type {
-    NUMBER,
-    PLUS,
-    MINUS,
-    MULTIPLY,
-    ASSIGNMENT,
-    VARIABLE,
-    CARRIAGE_RETURN,
-    END_OF_FILE,
-    ERROR
-} token_type;
-
-typedef struct Token {
-    token_type type;
-    union {
-        Number* num;   // if type == NUMBER
-        char variable; // if type == VARIABLE or ASSIGNMENT
-    } data;
-} Token;
 
 
 // Stack functions BEGIN
@@ -220,13 +169,19 @@ Number* _sub(Number *num1, Number *num2)
     return NULL;
 }
 
+Number* _mul(Number *num1, Number *num2)
+{
+    // TODO
+    return NULL;
+}
+
 int add(Stack *stack)
 {
     if (stack->nb_elem < 2)
         return -1;
 
-    Number *num1 = stack->top;
-    Number *num2 = stack->top->next;
+    Number *num1 = pop(stack);
+    Number *num2 = pop(stack);
     Number *sum;
 
     if (num1->sign == POSITIVE && num2->sign == POSITIVE)
@@ -240,6 +195,7 @@ int add(Stack *stack)
         sum->sign = NEGATIVE;
     }
 
+    push(stack, sum);
     return 0;
 }
 
@@ -249,8 +205,8 @@ int sub(Stack *stack)
     if (stack->nb_elem < 2)
         return -1;
 
-    Number *num1 = stack->top;
-    Number *num2 = stack->top->next;
+    Number *num1 = pop(stack);
+    Number *num2 = pop(stack);
     Number *diff;
 
     if (num1->sign == POSITIVE && num2->sign == POSITIVE)
@@ -265,17 +221,27 @@ int sub(Stack *stack)
         diff = _sub(num2, num1);
     
 
+    push(stack, diff);
     return 0;
 }
 
-Number* _mul(Number *num1, Number *num2)
-{
-}
 
 int mul(Stack *stack)
 {
     if (stack->nb_elem < 2)
         return -1;
+
+    Number *num1 = pop(stack);
+    Number *num2 = pop(stack);
+    Number *prod = _mul(num1, num2);
+
+    if (num1->sign == POSITIVE && num2->sign == NEGATIVE)
+        prod->sign = NEGATIVE;
+    else if (num1->sign == NEGATIVE && num2->sign == POSITIVE)
+        prod->sign = NEGATIVE;
+
+    push(stack, prod);
+    return 0;
 }
 
 void assignment(char variable, Number *num) 
@@ -284,6 +250,8 @@ void assignment(char variable, Number *num)
 
 Number* variable_value(char variable)
 {
+    // TODO
+    return NULL;
 }
 
 // Stack functions END
@@ -291,10 +259,11 @@ Number* variable_value(char variable)
 Number* create_number()
 {
     Number *num = malloc(sizeof(Number));
-    num->sign = 1;
+    num->sign = POSITIVE;
     num->last = NULL;
     num->next = NULL;
     num->nb_ref = 0;
+    return num;
 }
 
 void delete_number(Number *num)
@@ -309,7 +278,8 @@ void delete_number(Number *num)
     free(num);
 }
 
-void print_number(Number *number) {
+void print_number(Number *number) 
+{
     if (number == NULL)
         return;
     Digit *d = number->last;
@@ -330,11 +300,13 @@ void print_number(Number *number) {
 
 
 
-int is_digit(char c) {
+int is_digit(char c) 
+{
     return (c >= '0') && (c <= '9');
 }
 
-int to_digit(char c) {
+int to_digit(char c) 
+{
     if (!is_digit(c))
         return -1;
     else {
@@ -342,7 +314,8 @@ int to_digit(char c) {
     }
 }
 
-int is_lower_case(char c) {
+int is_lower_case(char c)
+{
     return (c >= 'a') && (c <= 'z');
 }
 
@@ -497,6 +470,7 @@ Token next_token()
     }
 
     return token;
+    }
 }
 
 void goto_next_line()
@@ -511,6 +485,7 @@ void goto_next_line()
 
 void calculator(Stack *stack, Number *variables_list[])
 {
+    printf(">");
     Token token = next_token();
     char character;
 
@@ -557,6 +532,7 @@ void calculator(Stack *stack, Number *variables_list[])
                 break;
         }
 
+        printf(">");
         token = next_token();
     }
 
@@ -564,14 +540,5 @@ void calculator(Stack *stack, Number *variables_list[])
     free(stack);
     for (int i = 0; i < 26; i++)
         delete_number(variables_list[i]);
-}
-
-int main() {
-
-    Stack *stack = malloc(sizeof(stack));
-    Number* variables_list[26];
-    calculator(stack, variables_list);
-
-    return 0;
 }
 
