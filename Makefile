@@ -1,5 +1,9 @@
 all:
-	gcc calculator.h calculator.c main.c -o tp1
+	gcc calculator.h calculator.c main.c -o calculator
+
+run:
+	./calculator
 
 test:
-	gcc test.c -o test
+	gcc calculator.h calculator.c test.c -o test
+
