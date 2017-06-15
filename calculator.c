@@ -294,8 +294,41 @@ void print_number(Number *number)
         printf("%d",d->value);
         d = d->previous;
     }
-    
-    printf("\n");
+}
+
+void print_token(Token *token)
+{
+    switch(token->type)
+    {
+        case NUMBER:
+            printf("NUMBER: "); 
+            print_number(token->data.num);
+            break;
+        case PLUS:
+            printf("PLUS");   
+            break;
+        case MINUS:
+            printf("MINUS");  
+            break;
+        case MULTIPLY:
+            printf("MULTIPLY"); 
+            break;
+        case ASSIGNMENT:
+            printf("ASSIGNMENT (%c)", token->data.variable);
+            break;
+        case VARIABLE:
+            printf("VARIABLE (%c)", token->data.variable);
+            break;
+        case CARRIAGE_RETURN:
+            printf("CARRIAGE_RETURN");
+            break;
+        case END_OF_FILE:
+            printf("END_OF_FILE");
+            break;
+        case ERROR:
+            printf("ERROR");
+            break;
+    }
 }
 
 
