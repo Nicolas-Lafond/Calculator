@@ -8,6 +8,7 @@
 #define POSITIVE 1
 #define NEGATIVE 0
 
+
 // a structure for digits in a number
 // the next pointer point to the next more significant digit
 // the previous pointer point to the next less significant digit
