@@ -352,6 +352,7 @@ int is_lower_case(char c)
 }
 
 // create a number by reading from stdin
+// this function should only be called by next_token()
 Number* _read_number(char first_digit)
 {
     Number *num = (Number*) malloc(sizeof(Number));
@@ -472,10 +473,11 @@ Token next_token()
                 }
                 else {
                     token.type = NUMBER;
+                    token.data.num = num;
                     num->sign = NEGATIVE;
                 }
             }
-
+            break;
 
         case '*':
             c = getchar();
