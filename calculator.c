@@ -429,6 +429,9 @@ Number* create_number()
 
 void delete_number(Number *num)
 {
+    if (num == NULL)
+        return;
+
     Digit *digit = num->last;
     Digit *next;
     while (digit != NULL) {
@@ -764,5 +767,6 @@ void calculator(Stack *stack, Number *variables_list[])
     free(stack);
     for (int i = 0; i < 26; i++)
         delete_number(variables_list[i]);
+    printf("goodbye!\n");
 }
 
