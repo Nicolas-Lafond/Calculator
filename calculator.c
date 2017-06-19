@@ -201,28 +201,32 @@ Number* _add(Number *num1, Number *num2)
 Digit* sub_digits(Digit *digit1, Digit *digit2, int *carry)
 {
     Digit *diff;
+    int value1, value2;
 
     diff = malloc(sizeof(Digit));
 
-    if (digit2 == NULL) {
-        diff->value = digit1->value - (*carry);
-    }
+    if (digit2 == NULL) 
+        value2 = 0;
+    else
+        value2 = digit2->value;
 
-    else if (*carry == 1 && digit1->value == 0) {
-        diff->value = 19 - digit2->value;
+    if (*carry == 1 && digit1->value == 0) {
+        value1 = 19;
     }
     else if (*carry == 1 && digit1->value != 0) {
-        diff->value = 10 + digit1->value - digit2->value;
+        value1 = digit1->value - 1;
         *carry = 0;
     }
-    else if (*carry == 0 && digit1->value < digit2->value) {
-        diff->value = 10 + digit1->value - digit2->value;
-        *carry = 1;
-    }
-    else if (*carry == 0 && digit1->value >= digit2->value) {
-        diff->value = digit1->value - digit2->value;
+    else if (*carry == 0) {
+        value1 = digit1->value;
     }
 
+    if (value1 < value2) {
+        value1 += 10;
+        *carry = 1;
+    }
+
+    diff->value = value1 - value2;
     diff->next = NULL;
     diff->previous = NULL;
 
@@ -238,7 +242,7 @@ Number* _sub(Number *num1, Number *num2)
     int carry = 0;
 
     digit1 = num1->last;
-    digit1 = num2->last;
+    digit2 = num2->last;
 
     // same as _add
     digit_diff = sub_digits(digit1, digit2, &carry);
@@ -252,7 +256,8 @@ Number* _sub(Number *num1, Number *num2)
         digit_diff->previous = current_digit;
         current_digit->next = digit_diff;
         digit1 = digit1->next;
-        digit2 = digit2->next;
+        if (digit2 != NULL)
+            digit2 = digit2->next;
         current_digit = digit_diff;
     }
 
