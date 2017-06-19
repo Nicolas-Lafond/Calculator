@@ -122,6 +122,14 @@ void empty_stack(Stack *s)
 }
 
 
+
+/* 
+ * Beginning of arithmetic operations section
+ * functions with an underscore as first character that for
+ * granted that both numbers on the stack are positive. They 
+ * are only called by the main arithmetic functions.
+ */
+
 Digit* add_digits(Digit *digit1, Digit *digit2, int *excess)
 {
     if (digit1 == NULL && digit2 == NULL) {
@@ -152,12 +160,6 @@ Digit* add_digits(Digit *digit1, Digit *digit2, int *excess)
 
     return sum;
 }
-
-/* Beginning of arithmetic operations section
- * functions with an underscore as first character that for
- * granted that both numbers on the stack are positive. They 
- * are only called by the main arithmetic functions.
- */
 
 // NOTE: return -1 on error
 Number* _add(Number *num1, Number *num2)
@@ -196,16 +198,82 @@ Number* _add(Number *num1, Number *num2)
     return sum;
 }
 
+Digit* sub_digits(Digit *digit1, Digit *digit2, int *carry)
+{
+    Digit *diff;
+
+    diff = malloc(sizeof(Digit));
+
+    if (digit2 == NULL) {
+        diff->value = digit1->value - (*carry);
+    }
+
+    else if (*carry == 1 && digit1->value == 0) {
+        diff->value = 19 - digit2->value;
+    }
+    else if (*carry == 1 && digit1->value != 0) {
+        diff->value = 10 + digit1->value - digit2->value;
+        *carry = 0;
+    }
+    else if (*carry == 0 && digit1->value < digit2->value) {
+        diff->value = 10 + digit1->value - digit2->value;
+        *carry = 1;
+    }
+    else if (*carry == 0 && digit1->value >= digit2->value) {
+        diff->value = digit1->value - digit2->value;
+    }
+
+    diff->next = NULL;
+    diff->previous = NULL;
+
+    return diff;
+}
+
 Number* _sub(Number *num1, Number *num2)
 {
-    //TODO
-    return NULL;
+    Number *diff = malloc(sizeof(Number));
+    diff->sign = POSITIVE;
+
+    Digit *digit1, *digit2, *digit_diff, *current_digit;
+    int carry = 0;
+
+    digit1 = num1->last;
+    digit1 = num2->last;
+
+    // same as _add
+    digit_diff = sub_digits(digit1, digit2, &carry);
+    diff->last = digit_diff;
+    digit1 = digit1->next;
+    digit2 = digit2->next;
+    current_digit = digit_diff;
+
+    while (digit1 != NULL) {
+        digit_diff = sub_digits(digit1, digit2, &carry);
+        digit_diff->previous = current_digit;
+        current_digit->next = digit_diff;
+        digit1 = digit1->next;
+        digit2 = digit2->next;
+        current_digit = digit_diff;
+    }
+
+
+    return diff;
 }
 
 Number* _mul(Number *num1, Number *num2)
 {
     // TODO
     return NULL;
+}
+
+/*
+ * This function returns TRUE if |num1| >= |num2|
+ * and FALSE otherwise
+ */
+int greater_equal (Number *num1, Number *num2)
+{
+    // TODO
+    return 0;
 }
 
 int add(Stack *stack)
@@ -241,6 +309,13 @@ int sub(Stack *stack)
     Number *num1 = pop(stack);
     Number *num2 = pop(stack);
     Number *diff;
+    int greater = greater_equal(num1, num2);
+    if (greater == FALSE) { // if |num1| < |num2|
+        Number *tempo = num1;
+        num1 = num2;
+        num2 = tempo;
+    }
+
 
     if (num1->sign == POSITIVE && num2->sign == POSITIVE)
         diff = _sub(num1, num2);
@@ -253,6 +328,9 @@ int sub(Stack *stack)
     else if (num1->sign == NEGATIVE && num2->sign == NEGATIVE)
         diff = _sub(num2, num1);
     
+    if (greater == FALSE) { // if |num1| < |num2|
+        diff->sign *= -1;
+    }
 
     push(stack, diff);
     return 0;

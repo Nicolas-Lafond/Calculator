@@ -67,12 +67,15 @@ Digit* nth_digit(int number, int position);
 int number_of_digits(int number);
 Number* create_number_from_int(int num);
 void empty_stack(Stack *s);
-Digit* add_digits(Digit *digit1, Digit *digit2, int *excess);
+int greater_equal(Number *number1, Number *number2);
 
 // arithmetics functions
+Digit* add_digits(Digit *digit1, Digit *digit2, int *excess);
 Number* _add(Number *num1, Number *num2);
+Digit* sub_digits(Digit *digit1, Digit *digit2, int *carry);
 Number* _sub(Number *num1, Number *num2);
 Number* _mul(Number *num1, Number *num2);
+int greater_equal (Number *num1, Number *num2);
 int add(Stack *stack);
 int sub(Stack *stack);
 int mul(Stack *stack);
