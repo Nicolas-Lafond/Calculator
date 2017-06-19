@@ -272,8 +272,36 @@ Number* _mul(Number *num1, Number *num2)
  */
 int greater_equal (Number *num1, Number *num2)
 {
-    // TODO
-    return 0;
+    Digit *digit1, *digit2;
+
+    digit1 = num1->last;
+    digit2 = num2->last;
+
+    // first we check that they have the same number of digits
+    while (digit1 != NULL) {
+        if (digit2 == NULL)
+            return TRUE;
+        digit1 = digit1->next;
+        digit2 = digit2->next;
+    }
+
+    if (digit2->next != NULL)
+        return FALSE;
+
+    // At this point we know that the two numbers are the same length
+    while (digit1 != NULL) {
+        if (digit1->value < digit2->value)
+            return FALSE;
+        else if (digit1->value > digit2->value)
+            return TRUE;
+        else if (digit1->value == digit2->value) {
+            digit1 = digit1->previous;
+            digit2 = digit2->previous;
+        }
+    }
+
+    return TRUE;
+
 }
 
 int add(Stack *stack)
