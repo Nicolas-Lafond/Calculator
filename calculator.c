@@ -235,6 +235,8 @@ Digit* sub_digits(Digit *digit1, Digit *digit2, int *carry)
 
 Number* _sub(Number *num1, Number *num2)
 {
+    // NOTE : this function should only receive two positive number 
+    // with |num1| > |num2|
     Number *diff = malloc(sizeof(Number));
     diff->sign = POSITIVE;
 
@@ -283,7 +285,7 @@ int greater_equal (Number *num1, Number *num2)
     digit2 = num2->last;
 
     // first we check that they have the same number of digits
-    while (digit1 != NULL) {
+    while (digit1->next != NULL) {
         if (digit2 == NULL)
             return TRUE;
         digit1 = digit1->next;
@@ -307,6 +309,14 @@ int greater_equal (Number *num1, Number *num2)
 
     return TRUE;
 
+}
+
+void reverse_sign(Number *number)
+{
+    if (number->sign == POSITIVE)
+        number->sign = NEGATIVE;
+    else
+        number->sign = POSITIVE;
 }
 
 int add(Stack *stack)
@@ -342,29 +352,36 @@ int sub(Stack *stack)
     Number *num1 = pop(stack);
     Number *num2 = pop(stack);
     Number *diff;
-    int greater = greater_equal(num1, num2);
-    if (greater == FALSE) { // if |num1| < |num2|
-        Number *tempo = num1;
-        num1 = num2;
-        num2 = tempo;
+    int greater;
+
+    if      (num1->sign == POSITIVE && num2->sign == POSITIVE) {
+        greater = greater_equal(num1, num2);
+        if (greater) {
+            diff = _sub(num1, num2);
+        }
+        else {
+            diff = _sub(num2, num1);
+            diff->sign = NEGATIVE;
+        }
     }
-
-
-    if (num1->sign == POSITIVE && num2->sign == POSITIVE)
-        diff = _sub(num1, num2);
-    else if (num1->sign == POSITIVE && num2->sign == NEGATIVE)
+    else if (num1->sign == NEGATIVE && num2->sign == NEGATIVE) {
+        greater = greater_equal(num2, num1);
+        if (greater) {
+            diff = _sub(num2, num1);
+        }
+        else {
+            diff = _sub(num1, num2);
+            diff->sign = NEGATIVE;
+        }
+    }
+    else if (num1->sign == POSITIVE && num2->sign == NEGATIVE) {
         diff = _add(num1, num2);
+    }
     else if (num1->sign == NEGATIVE && num2->sign == POSITIVE) {
         diff = _add(num1, num2);
         diff->sign = NEGATIVE;
     }
-    else if (num1->sign == NEGATIVE && num2->sign == NEGATIVE)
-        diff = _sub(num2, num1);
     
-    if (greater == FALSE) { // if |num1| < |num2|
-        diff->sign *= -1;
-    }
-
     push(stack, diff);
     return 0;
 }

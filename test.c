@@ -178,12 +178,24 @@ void test_sub()
     printf("\n");
 }
 
+void test_greater_equal()
+{
+    Number *num1, *num2;
+
+    num1 = create_number_from_int(832);
+    num2 = create_number_from_int(123);
+    assert(greater_equal(num1, num2) == TRUE);
+    assert(greater_equal(num1, num1) == TRUE);
+    assert(greater_equal(num2, num1) == FALSE);
+}
+
 int main(int argc, char* argv[])
 {
     //test_tokens();
     //test_numbers();
     //test_add();
-    test_sub();
+    //test_sub();
+    test_greater_equal();
     //test_to_digit();
     //test_create_number_from_int();
     //test_number_of_digits();

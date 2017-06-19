@@ -68,6 +68,7 @@ int number_of_digits(int number);
 Number* create_number_from_int(int num);
 void empty_stack(Stack *s);
 int greater_equal(Number *number1, Number *number2);
+void reverse_sign(Number *number);
 
 // arithmetics functions
 Digit* add_digits(Digit *digit1, Digit *digit2, int *excess);
