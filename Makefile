@@ -7,6 +7,5 @@ clean:
 run:
 	./calculator
 
-test:
-	gcc -g calculator.h calculator.c test.c -o test
-
+test: test.c calculator.h calculator.c
+	gcc -g calculator.h calculator.c test.c -o test 

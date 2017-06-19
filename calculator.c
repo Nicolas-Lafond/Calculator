@@ -66,18 +66,47 @@ Digit* nth_digit(int number, int position)
 
 }
 
+int number_of_digits(int number)
+{
+    if (number == 0)
+        return 1;
+    else if (number < 0)
+        number = -1 * number;
+
+    int nb_digits = 0;
+    while (exponent(10, nb_digits) <= number)
+        nb_digits++;
+
+    return nb_digits;
+}
+
 // A small function to easily create a number from an int
 // mostly for testing purposes, we don't assume that the
 // number can be arbitrary long like in the calculator
 Number* create_number_from_int(int num)
 {
+    int nb_digits = number_of_digits(num);
+    int position = nb_digits;
+    Digit *current_digit, *next_digit;
+
+    current_digit = NULL;
+    next_digit= NULL;
     Number *number = (Number*) malloc(sizeof(Number));
     if (num < 0)
         number->sign = 0;
     else
         number->sign = 1;
 
-    int position = 0;
+    while (position >= 1) {
+        current_digit = nth_digit(num, position);
+        current_digit->next = next_digit;
+        if (next_digit != NULL)
+            next_digit->previous = current_digit;
+        next_digit = current_digit;
+        position--;
+    }
+
+    number->last = current_digit;
 
     return number;
 }
@@ -154,10 +183,15 @@ Number* _add(Number *num1, Number *num2)
         digit_sum = add_digits(digit1, digit2, &excess);
         digit_sum->previous = current_digit;
         current_digit->next = digit_sum;
-        digit1 = digit1->next;
-        digit2 = digit2->next;
+        if (digit1 != NULL)
+            digit1 = digit1->next;
+        if (digit2 != NULL)
+            digit2 = digit2->next;
         current_digit = digit_sum;
     }
+
+    if (excess == 1) 
+        current_digit->next = create_digit(1, NULL, current_digit);
 
     return sum;
 }
@@ -403,6 +437,7 @@ Token next_token()
 
     if (end_of_line) {
         token.type = CARRIAGE_RETURN;
+        end_of_line = FALSE;
         return token;
     }
 
@@ -528,14 +563,19 @@ Token next_token()
     return token;
 }
 
+// go to the next line ignoring all tokens
+// used by calculator function
 void goto_next_line()
 {
-    char c = getchar();
-    while (c != '\n')
-        if (c == EOF)
-            exit(0);
-        else
-            c = getchar();
+    if (!end_of_line) {
+        char c = getchar();
+        while (c != '\n') {
+            if (c == EOF)
+                exit(0);
+            else
+                c = getchar();
+        }
+    }
 }
 
 void calculator(Stack *stack, Number *variables_list[])
@@ -576,18 +616,19 @@ void calculator(Stack *stack, Number *variables_list[])
                 if (stack->nb_elem == 1)
                     print_number(stack->top);
                 else
-                    printf("\nErreur, entré non-valide\n");
+                    printf("Erreur, entré non-valide");
                 empty_stack(stack);
+                printf("\n>");
                 break;
 
             case ERROR:
-                printf("\nErreur, entré non-valide\n");
+                printf("Erreur, entré non-valide");
                 empty_stack(stack);
                 goto_next_line();
+                printf("\n>");
                 break;
         }
 
-        printf(">");
         token = next_token();
     }
 

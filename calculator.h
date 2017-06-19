@@ -64,6 +64,7 @@ Number* pop(Stack *s);
 int exponent(int number, int exp);
 Digit* create_digit(int value, Digit *next, Digit *previous);
 Digit* nth_digit(int number, int position);
+int number_of_digits(int number);
 Number* create_number_from_int(int num);
 void empty_stack(Stack *s);
 Digit* add_digits(Digit *digit1, Digit *digit2, int *excess);
