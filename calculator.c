@@ -111,6 +111,27 @@ Number* create_number_from_int(int num)
     return number;
 }
 
+// append number2 to number1
+// number1 is changed but number2 is not
+void append_numbers(Number *number1, Number *number2)
+{
+    Digit *digit1 = number1->last;
+    Digit *digit2 = number2->last;
+
+    // set digit2 to the most significant digit of number2
+    while (digit2->next != NULL)
+        digit2 = digit2->next;
+
+    while (digit2 != NULL) {
+        digit1->previous = create_digit(digit2->value, digit1, NULL);
+        digit1 = digit1->previous;
+        digit2 = digit2->previous;
+    }
+
+    digit1->previous = NULL;
+    number1->last = digit1;
+}
+
 void empty_stack(Stack *s)
 {
     Number *num;
@@ -267,10 +288,78 @@ Number* _sub(Number *num1, Number *num2)
     return diff;
 }
 
+Digit* mul_digits(Digit *digit1, Digit *digit2, int *carry)
+{
+    Digit *product;
+    product = malloc(sizeof(Digit));
+    int product_value = digit1->value * digit2->value + *carry;
+    product->value = product_value % 10;
+    *carry = (product_value - product->value) / 10;
+
+    return product;
+}
+
+// multiply the number by a number composed of a single digit
+// useful for _mul() function
+Number* _multiply_by_digit(Number *number, Digit *digit)
+{
+    Number *product = malloc(sizeof(Number));
+    product->sign = POSITIVE;
+    Digit *product_digit, *current_digit;
+    current_digit = number->last;
+    int carry = 0;
+
+    product_digit = mul_digits(current_digit, digit, &carry);
+    product->last = product_digit;
+    current_digit = current_digit->next;
+
+    while (current_digit != NULL) {
+        product_digit->next = mul_digits(current_digit, digit, &carry);
+        product_digit->next->previous = product_digit;
+        product_digit = product_digit->next;
+        current_digit = current_digit->next;
+    }
+
+    if (carry > 0) {
+        product_digit->next = create_digit(carry, NULL, product_digit);
+    }
+
+    return product;
+}
+
 Number* _mul(Number *num1, Number *num2)
 {
-    // TODO
-    return NULL;
+    Number *product;
+    Number *zero, *zeros;
+    Digit *current_digit;
+    Number *new_product, *old_product;
+
+    // inititialise product to 0
+    product = malloc(sizeof(Number));
+    product->sign = POSITIVE;
+    product->last = create_digit(0, NULL, NULL);
+
+    // zeros is a list of zeros that are appended to a number
+    zero = malloc(sizeof(Number));
+    zero->last = create_digit(0, NULL, NULL);
+    zeros = malloc(sizeof(Number));
+    zeros->last = create_digit(0, NULL, NULL);
+
+    current_digit = num2->last;
+    product = _multiply_by_digit(num1, current_digit);
+    current_digit = current_digit->next;
+
+    while (current_digit != NULL) {
+        new_product = _multiply_by_digit(num1, current_digit);
+        append_numbers(new_product, zeros);
+        append_numbers(zeros, zero); // add a zero to zeros
+        old_product = product;
+        product = _add(product, new_product);
+        free(old_product);
+        current_digit = current_digit->next;
+    }
+
+    return product;
 }
 
 /*
