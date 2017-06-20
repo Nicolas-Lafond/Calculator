@@ -516,7 +516,7 @@ int mul(Stack *stack)
 void assignment(char variable, Number *num, Number *variables_list[]) 
 {
     Number *previous_number = variables_list[variable - 'a'];
-    if (previous_number->nb_ref == 1)
+    if (previous_number != NULL && previous_number->nb_ref == 1)
         delete_number(previous_number);
     variables_list[variable - 'a'] = num;
     num->nb_ref += 1;
