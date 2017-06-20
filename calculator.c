@@ -524,6 +524,7 @@ void assignment(char variable, Number *num, Number *variables_list[])
 
 Number* variable_value(char variable, Number *variables_list[])
 {
+    // note : access to non-assigned value should not segfault!!!
     return variables_list[variable - 'a'];
 }
 
@@ -826,6 +827,7 @@ void calculator(Stack *stack, Number *variables_list[])
     printf(">");
     Token token = next_token();
     char character;
+    Number *num;
 
     while (token.type != END_OF_FILE) {
         switch(token.type)
@@ -847,25 +849,31 @@ void calculator(Stack *stack, Number *variables_list[])
                 break;
                 
             case ASSIGNMENT:
-                assignment(token.data.variable, stack->top, variables_list);
+                if (stack->top != NULL)
+                    assignment(token.data.variable, stack->top, variables_list);
+                else
+                    printf("Error trying to assign a variable to nothing");
                 break;
 
             case VARIABLE:
-                push(stack,
-                        variable_value(token.data.variable, variables_list));
+                num = variable_value(token.data.variable, variables_list);
+                if (num != NULL)
+                    push(stack, num);
+                else
+                    printf("Error trying to access an non-assigned variable");
                 break;
 
             case CARRIAGE_RETURN:
                 if (stack->nb_elem == 1)
                     print_number(stack->top);
                 else
-                    printf("Erreur, entré non-valide");
+                    printf("Error wrong number of value entered");
                 empty_stack(stack);
                 printf("\n>");
                 break;
 
             case ERROR:
-                printf("Erreur, entré non-valide");
+                printf("Error non-valid entry");
                 empty_stack(stack);
                 goto_next_line();
                 printf("\n>");
