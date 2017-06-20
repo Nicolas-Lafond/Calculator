@@ -327,6 +327,22 @@ Number* _multiply_by_digit(Number *number, Digit *digit)
     return product;
 }
 
+int is_zero(Number *number)
+{
+    if (number == NULL) {
+        return FALSE;
+    }
+    else if (number->last != NULL) {
+        if (number->last->value == 0 && number->last->next == NULL)
+            return TRUE;
+        else 
+            return FALSE;
+    }
+    else {
+        return FALSE;
+    }
+}
+
 Number* _mul(Number *num1, Number *num2)
 {
     Number *product;
@@ -338,6 +354,9 @@ Number* _mul(Number *num1, Number *num2)
     product = malloc(sizeof(Number));
     product->sign = POSITIVE;
     product->last = create_digit(0, NULL, NULL);
+
+    if (is_zero(num1) || is_zero(num2))
+        return product;
 
     // zeros is a list of zeros that are appended to a number
     zero = malloc(sizeof(Number));
@@ -496,6 +515,7 @@ int mul(Stack *stack)
 
 void assignment(char variable, Number *num) 
 {
+    // TODO
 }
 
 Number* variable_value(char variable)
@@ -856,6 +876,6 @@ void calculator(Stack *stack, Number *variables_list[])
     free(stack);
     for (int i = 0; i < 26; i++)
         delete_number(variables_list[i]);
-    printf("goodbye!\n");
+    printf("\ngoodbye!\n");
 }
 

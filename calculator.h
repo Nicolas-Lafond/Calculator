@@ -79,6 +79,7 @@ Number* _sub(Number *num1, Number *num2);
 Digit* mul_digits(Digit *digit1, Digit *digit2, int *carry);
 Number* _multiply_by_digit(Number *number, Digit *digit);
 Number* _mul(Number *num1, Number *num2);
+int is_zero(Number *number);
 int greater_equal (Number *num1, Number *num2);
 int add(Stack *stack);
 int sub(Stack *stack);
