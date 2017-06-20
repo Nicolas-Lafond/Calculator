@@ -513,15 +513,18 @@ int mul(Stack *stack)
     return 0;
 }
 
-void assignment(char variable, Number *num) 
+void assignment(char variable, Number *num, Number *variables_list[]) 
 {
-    // TODO
+    Number *previous_number = variables_list[variable - 'a'];
+    if (previous_number->nb_ref == 1)
+        delete_number(previous_number);
+    variables_list[variable - 'a'] = num;
+    num->nb_ref += 1;
 }
 
-Number* variable_value(char variable)
+Number* variable_value(char variable, Number *variables_list[])
 {
-    // TODO
-    return NULL;
+    return variables_list[variable - 'a'];
 }
 
 // Stack functions END
@@ -844,12 +847,12 @@ void calculator(Stack *stack, Number *variables_list[])
                 break;
                 
             case ASSIGNMENT:
-                assignment(token.data.variable, stack->top);
+                assignment(token.data.variable, stack->top, variables_list);
                 break;
 
             case VARIABLE:
                 push(stack,
-                        variable_value(token.data.variable));
+                        variable_value(token.data.variable, variables_list));
                 break;
 
             case CARRIAGE_RETURN:

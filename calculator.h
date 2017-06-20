@@ -86,8 +86,8 @@ int sub(Stack *stack);
 int mul(Stack *stack);
 
 // other numbers functions
-void assignment(char variable, Number *num);
-Number* variable_value(char variable);
+void assignment(char variable, Number *num, Number *variables_list[]);
+Number* variable_value(char variable, Number *variables_list[]);
 Number* create_number();
 void delete_number(Number *num);
 void print_number(Number *number);
