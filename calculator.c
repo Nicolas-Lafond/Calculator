@@ -1,10 +1,10 @@
-/* TP1 IFT2035
+/* 
+ * Postfix calculator with infinite precision
  * by Nicolas Lafond 
  * version 2
- * postfix calculator with infinite precision
  * numbers are stocked in linked list where each digit is stocked in an element
  * the first digit in the list is the last digit of the number represented
- * addition, substraction and multiplication are supported but not division
+ * addition, substraction and multiplication are supported but not (yet) division.
  */
 
 #include "calculator.h"
