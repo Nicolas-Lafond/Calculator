@@ -1,5 +1,5 @@
 all:
-	gcc calculator.h calculator.c main.c -o calculator
+	gcc -g calculator.h calculator.c main.c -o calculator
 
 clean:
 	rm calculator test

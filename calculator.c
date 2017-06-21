@@ -138,11 +138,21 @@ void empty_stack(Stack *s)
     while (s->nb_elem > 0) {
         num = pop(s);
         if (num->nb_ref == 0)
-            free(num);
+            delete_number(num);
     }
 }
 
+int is_in_stack(Number *number, Stack *stack)
+{
+    Number *stack_number = stack->top;
+    while (stack_number != NULL) {
+        if (stack_number == number)
+            return TRUE;
+        stack_number = stack_number->next;
+    }
 
+    return FALSE;
+}
 
 /* 
  * Beginning of arithmetic operations section
@@ -436,16 +446,24 @@ int add(Stack *stack)
     Number *num2 = pop(stack);
     Number *sum;
 
-    if (num1->sign == POSITIVE && num2->sign == POSITIVE)
+    if (num1->sign == POSITIVE && num2->sign == POSITIVE) {
         sum = _add(num1, num2);
-    else if (num1->sign == POSITIVE && num2->sign == NEGATIVE)
+    }
+    else if (num1->sign == POSITIVE && num2->sign == NEGATIVE) {
         sum = _sub(num1, num2);
-    else if (num1->sign == NEGATIVE && num2->sign == POSITIVE)
+    }
+    else if (num1->sign == NEGATIVE && num2->sign == POSITIVE) {
         sum = _sub(num2, num1);
+    }
     else if (num1->sign == NEGATIVE && num2->sign == NEGATIVE) {
         sum = _add(num1, num2);
         sum->sign = NEGATIVE;
     }
+
+    if (num1->nb_ref == 0)
+        delete_number(num1);
+    if (num2->nb_ref == 0)
+        delete_number(num2);
 
     push(stack, sum);
     return 0;
@@ -490,6 +508,11 @@ int sub(Stack *stack)
         diff->sign = NEGATIVE;
     }
     
+    if (num1->nb_ref == 0)
+        delete_number(num1);
+    if (num2->nb_ref == 0)
+        delete_number(num2);
+
     push(stack, diff);
     return 0;
 }
@@ -509,6 +532,11 @@ int mul(Stack *stack)
     else if (num1->sign == NEGATIVE && num2->sign == POSITIVE)
         prod->sign = NEGATIVE;
 
+    if (num1->nb_ref == 0)
+        delete_number(num1);
+    if (num2->nb_ref == 0)
+        delete_number(num2);
+
     push(stack, prod);
     return 0;
 }
@@ -516,8 +544,14 @@ int mul(Stack *stack)
 void assignment(char variable, Number *num, Number *variables_list[]) 
 {
     Number *previous_number = variables_list[variable - 'a'];
-    if (previous_number != NULL && previous_number->nb_ref == 1)
+    if (previous_number == num) // double assignment the same variable to a number
+        return;
+    else if (previous_number != NULL && previous_number->nb_ref == 1) {
         delete_number(previous_number);
+    } 
+    else if (previous_number != NULL && previous_number->nb_ref > 1) {
+        previous_number->nb_ref--;
+    }
     variables_list[variable - 'a'] = num;
     num->nb_ref += 1;
 }
@@ -885,8 +919,8 @@ void calculator(Stack *stack, Number *variables_list[])
 
     empty_stack(stack);
     free(stack);
-    for (int i = 0; i < 26; i++)
-        delete_number(variables_list[i]);
+    //for (int i = 0; i < 26; i++)
+    //    delete_number(variables_list[i]);
     printf("\ngoodbye!\n");
 }
 
