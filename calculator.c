@@ -122,14 +122,15 @@ Number* create_number_from_int(int num)
 
 // append number2 to number1
 // number1 is changed but number2 is not
-void append_numbers(Number *number1, Number *number2)
+// return -1 on error and 0 otherwise
+int append_numbers(Number *number1, Number *number2)
 {
     if (number1 == NULL || number2 == NULL)
-        return;
+        return -1;
     Digit *digit1 = number1->last;
     Digit *digit2 = number2->last;
     if (digit1 == NULL || digit2 == NULL)
-        return;
+        return -1;
 
     // set digit2 to the most significant digit of number2
     while (digit2->next != NULL)
@@ -145,7 +146,7 @@ void append_numbers(Number *number1, Number *number2)
                 free(digit1);
                 digit1 = previous_digit;
             }
-            return;
+            return -1;
         }
         else {
             digit1 = digit1->previous;
@@ -155,6 +156,7 @@ void append_numbers(Number *number1, Number *number2)
 
     digit1->previous = NULL;
     number1->last = digit1;
+    return 0;
 }
 
 void empty_stack(Stack *s)
@@ -441,6 +443,7 @@ Number* _mul(Number *num1, Number *num2)
     Number *zero, *zeros;
     Digit *current_digit;
     Number *new_product, *old_product;
+    int append1, append2;
 
     // inititialise product to 0
     product = malloc(sizeof(Number));
@@ -501,22 +504,24 @@ Number* _mul(Number *num1, Number *num2)
         new_product = _multiply_by_digit(num1, current_digit);
         if (new_product == NULL) { // Not enough memory
             delete_number(product);
-            free(zeros->last);
-            free(zeros);
-            free(zero->last);
-            free(zero);
+            delete_number(zero);
+            delete_number(zeros);
             return NULL;
         }
-        append_numbers(new_product, zeros);
-        append_numbers(zeros, zero); // add a zero to zeros
+        append1 = append_numbers(new_product, zeros);
+        append2 = append_numbers(zeros, zero); // add a zero to zeros
+        if (append1 == -1 || append2 == -1) {
+            delete_number(product);
+            delete_number(zero);
+            delete_number(zeros);
+            return NULL;
+        }
         old_product = product;
         product = _add(product, new_product);
         if (product == NULL) { // Not enough memory
             delete_number(old_product);
-            free(zeros->last);
-            free(zeros);
-            free(zero->last);
-            free(zero);
+            delete_number(zero);
+            delete_number(zeros);
             return NULL;
         }
         free(old_product);
