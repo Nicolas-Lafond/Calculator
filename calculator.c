@@ -60,11 +60,9 @@ Digit* create_digit(int value, Digit *next, Digit *previous)
 // examble : nth_digit(1234, 1) return 4
 Digit* nth_digit(int number, int position)
 {
-
     int digit = (number % (exponent(10, position))) / 
                     (exponent(10, position -1));
     return create_digit(digit, NULL, NULL);
-
 }
 
 int number_of_digits(int number)
@@ -91,15 +89,25 @@ Number* create_number_from_int(int num)
     Digit *current_digit, *next_digit;
 
     current_digit = NULL;
-    next_digit= NULL;
+    next_digit = NULL;
     Number *number = (Number*) malloc(sizeof(Number));
-    if (num < 0)
+    if (number == NULL) {
+        printf("insufficient memory to create a number");
+        return NULL;
+    }
+    else if (num < 0)
         number->sign = 0;
     else
         number->sign = 1;
 
     while (position >= 1) {
         current_digit = nth_digit(num, position);
+        if (current_digit == NULL) {
+            printf("insufficient memory to create a digit");
+            number->last = current_digit;
+            delete_number(number);
+            return NULL;
+        }
         current_digit->next = next_digit;
         if (next_digit != NULL)
             next_digit->previous = current_digit;
@@ -116,8 +124,12 @@ Number* create_number_from_int(int num)
 // number1 is changed but number2 is not
 void append_numbers(Number *number1, Number *number2)
 {
+    if (number1 == NULL || number2 == NULL)
+        return;
     Digit *digit1 = number1->last;
     Digit *digit2 = number2->last;
+    if (digit1 == NULL || digit2 == NULL)
+        return;
 
     // set digit2 to the most significant digit of number2
     while (digit2->next != NULL)
@@ -125,8 +137,20 @@ void append_numbers(Number *number1, Number *number2)
 
     while (digit2 != NULL) {
         digit1->previous = create_digit(digit2->value, digit1, NULL);
-        digit1 = digit1->previous;
-        digit2 = digit2->previous;
+        if (digit1->previous == NULL) { // Not enough memory
+            digit1 = number1->last->previous;
+            Digit *previous_digit;
+            while (digit1 != NULL) {
+                previous_digit = digit1->previous;
+                free(digit1);
+                digit1 = previous_digit;
+            }
+            return;
+        }
+        else {
+            digit1 = digit1->previous;
+            digit2 = digit2->previous;
+        }
     }
 
     digit1->previous = NULL;
@@ -145,6 +169,8 @@ void empty_stack(Stack *s)
 
 int is_in_stack(Number *number, Stack *stack)
 {
+    if (number == NULL || stack == NULL)
+        return FALSE;
     Number *stack_number = stack->top;
     while (stack_number != NULL) {
         if (stack_number == number)
@@ -170,7 +196,11 @@ Digit* add_digits(Digit *digit1, Digit *digit2, int *excess)
     }
 
     Digit *sum = malloc(sizeof(Digit));
-    if ((digit1 == NULL) && (digit2 != NULL)) {
+    if (sum == NULL) { // Not enough memory
+        printf("\nNot enough memory\n");
+        return NULL;
+    }
+    else if ((digit1 == NULL) && (digit2 != NULL)) {
         sum->value = digit2->value + *excess;
     }
     else if ((digit1 != NULL) && (digit2 == NULL)) {
@@ -193,11 +223,18 @@ Digit* add_digits(Digit *digit1, Digit *digit2, int *excess)
     return sum;
 }
 
-// NOTE: return -1 on error
 Number* _add(Number *num1, Number *num2)
 {
+    if (num1 == NULL)
+        return num2;
+    else if (num2 == NULL)
+        return num1;
 
     Number *sum = malloc(sizeof(Number));
+    if (sum == NULL) { // Not enough memory
+        printf("\nNot enough memory\n");
+        return NULL;
+    }
     sum->sign = POSITIVE;
 
     Digit *digit1, *digit2, *digit_sum, *current_digit;
@@ -208,6 +245,10 @@ Number* _add(Number *num1, Number *num2)
 
     // this code is a bit ugly, should probably refactor
     digit_sum = add_digits(digit1, digit2, &excess);
+    if (digit_sum == NULL) { // Not enough memory
+        delete_number(sum);
+        return NULL;
+    }
     sum->last = digit_sum;
     digit1 = digit1->next;
     digit2 = digit2->next;
@@ -215,6 +256,10 @@ Number* _add(Number *num1, Number *num2)
 
     while ((digit1 != NULL) || (digit2 != NULL)) {
         digit_sum = add_digits(digit1, digit2, &excess);
+        if (digit_sum == NULL) { // Not enough memory
+            delete_number(sum);
+            return NULL;
+        }
         digit_sum->previous = current_digit;
         current_digit->next = digit_sum;
         if (digit1 != NULL)
@@ -226,6 +271,10 @@ Number* _add(Number *num1, Number *num2)
 
     if (excess == 1) 
         current_digit->next = create_digit(1, NULL, current_digit);
+        if (current_digit == NULL) { // Not enough memory
+            delete_number(sum);
+            return NULL;
+        }
 
     return sum;
 }
@@ -236,6 +285,8 @@ Digit* sub_digits(Digit *digit1, Digit *digit2, int *carry)
     int value1, value2;
 
     diff = malloc(sizeof(Digit));
+    if (diff == NULL)
+        return NULL;
 
     if (digit2 == NULL) 
         value2 = 0;
@@ -270,6 +321,8 @@ Number* _sub(Number *num1, Number *num2)
     // NOTE : this function should only receive two positive number 
     // with |num1| > |num2|
     Number *diff = malloc(sizeof(Number));
+    if (diff == NULL)
+        return NULL;
     diff->sign = POSITIVE;
 
     Digit *digit1, *digit2, *digit_diff, *current_digit;
@@ -280,6 +333,10 @@ Number* _sub(Number *num1, Number *num2)
 
     // same as _add
     digit_diff = sub_digits(digit1, digit2, &carry);
+    if (digit_diff == NULL) { // Not enough memory
+        delete_number(diff);
+        return NULL;
+    }
     diff->last = digit_diff;
     digit1 = digit1->next;
     digit2 = digit2->next;
@@ -287,6 +344,10 @@ Number* _sub(Number *num1, Number *num2)
 
     while (digit1 != NULL) {
         digit_diff = sub_digits(digit1, digit2, &carry);
+        if (digit_diff == NULL) { // Not enough memory
+            delete_number(diff);
+            return NULL;
+        }
         digit_diff->previous = current_digit;
         current_digit->next = digit_diff;
         digit1 = digit1->next;
@@ -303,6 +364,9 @@ Digit* mul_digits(Digit *digit1, Digit *digit2, int *carry)
 {
     Digit *product;
     product = malloc(sizeof(Digit));
+    if (product == NULL) { // Not enough memory
+        return NULL;
+    }
     int product_value = digit1->value * digit2->value + *carry;
     product->value = product_value % 10;
     *carry = (product_value - product->value) / 10;
@@ -315,17 +379,28 @@ Digit* mul_digits(Digit *digit1, Digit *digit2, int *carry)
 Number* _multiply_by_digit(Number *number, Digit *digit)
 {
     Number *product = malloc(sizeof(Number));
+    if (product == NULL) { // Not enough memory
+        return NULL;
+    }
     product->sign = POSITIVE;
     Digit *product_digit, *current_digit;
     current_digit = number->last;
     int carry = 0;
 
     product_digit = mul_digits(current_digit, digit, &carry);
+    if (product_digit == NULL) { // Not enough memory
+        delete_number(product);
+        return NULL;
+    }
     product->last = product_digit;
     current_digit = current_digit->next;
 
     while (current_digit != NULL) {
         product_digit->next = mul_digits(current_digit, digit, &carry);
+        if (product_digit == NULL) { // Not enough memory
+            delete_number(product);
+            return NULL;
+        }
         product_digit->next->previous = product_digit;
         product_digit = product_digit->next;
         current_digit = current_digit->next;
@@ -333,6 +408,10 @@ Number* _multiply_by_digit(Number *number, Digit *digit)
 
     if (carry > 0) {
         product_digit->next = create_digit(carry, NULL, product_digit);
+        if (product_digit->next == NULL) { // Not enough memory
+            delete_number(product);
+            return NULL;
+        }
     }
 
     return product;
@@ -356,6 +435,8 @@ int is_zero(Number *number)
 
 Number* _mul(Number *num1, Number *num2)
 {
+    if (num1 == NULL || num2 == NULL)
+        return NULL;
     Number *product;
     Number *zero, *zeros;
     Digit *current_digit;
@@ -363,28 +444,81 @@ Number* _mul(Number *num1, Number *num2)
 
     // inititialise product to 0
     product = malloc(sizeof(Number));
+    if (product == NULL) { // Not enough memory
+        return NULL;
+    }
     product->sign = POSITIVE;
     product->last = create_digit(0, NULL, NULL);
+    if (product->last == NULL) { // Not enough memory
+        delete_number(product);
+        return NULL;
+    }
 
     if (is_zero(num1) || is_zero(num2))
         return product;
 
     // zeros is a list of zeros that are appended to a number
     zero = malloc(sizeof(Number));
+    if (zero == NULL) { // Not enough memory
+        delete_number(product);
+        return NULL;
+    }
     zero->last = create_digit(0, NULL, NULL);
+    if (zero->last == NULL) { // Not enough memory
+        free(zero);
+        delete_number(product);
+        return NULL;
+    }
     zeros = malloc(sizeof(Number));
+    if (zeros == NULL) { // Not enough memory
+        delete_number(product);
+        return NULL;
+    }
     zeros->last = create_digit(0, NULL, NULL);
+    if (zeros->last == NULL) { // Not enough memory
+        free(zeros);
+        free(zero->last);
+        free(zero);
+        delete_number(product);
+        return NULL;
+    }
 
     current_digit = num2->last;
-    product = _multiply_by_digit(num1, current_digit);
+    new_product = _multiply_by_digit(num1, current_digit);
+    if (new_product == NULL) { // Not enough memory
+        delete_number(product);
+        free(zeros->last);
+        free(zeros);
+        free(zero->last);
+        free(zero);
+        return NULL;
+    }
+    else 
+        product = new_product;
     current_digit = current_digit->next;
 
     while (current_digit != NULL) {
         new_product = _multiply_by_digit(num1, current_digit);
+        if (new_product == NULL) { // Not enough memory
+            delete_number(product);
+            free(zeros->last);
+            free(zeros);
+            free(zero->last);
+            free(zero);
+            return NULL;
+        }
         append_numbers(new_product, zeros);
         append_numbers(zeros, zero); // add a zero to zeros
         old_product = product;
         product = _add(product, new_product);
+        if (product == NULL) { // Not enough memory
+            delete_number(old_product);
+            free(zeros->last);
+            free(zeros);
+            free(zero->last);
+            free(zero);
+            return NULL;
+        }
         free(old_product);
         current_digit = current_digit->next;
     }
@@ -466,13 +600,18 @@ int add(Stack *stack)
     }
     else if (num1->sign == NEGATIVE && num2->sign == NEGATIVE) {
         sum = _add(num1, num2);
-        sum->sign = NEGATIVE;
+        if (sum != NULL)
+            sum->sign = NEGATIVE;
     }
+
 
     if (num1->nb_ref == 0)
         delete_number(num1);
     if (num2->nb_ref == 0)
         delete_number(num2);
+
+    if (sum == NULL)
+        return -1;
 
     push(stack, sum);
     return 0;
@@ -496,7 +635,8 @@ int sub(Stack *stack)
         }
         else {
             diff = _sub(num2, num1);
-            diff->sign = NEGATIVE;
+            if (diff != NULL)
+                diff->sign = NEGATIVE;
         }
     }
     else if (num1->sign == NEGATIVE && num2->sign == NEGATIVE) {
@@ -506,7 +646,8 @@ int sub(Stack *stack)
         }
         else {
             diff = _sub(num1, num2);
-            diff->sign = NEGATIVE;
+            if (diff != NULL)
+                diff->sign = NEGATIVE;
         }
     }
     else if (num1->sign == POSITIVE && num2->sign == NEGATIVE) {
@@ -514,13 +655,17 @@ int sub(Stack *stack)
     }
     else if (num1->sign == NEGATIVE && num2->sign == POSITIVE) {
         diff = _add(num1, num2);
-        diff->sign = NEGATIVE;
+        if (diff != NULL)
+            diff->sign = NEGATIVE;
     }
     
     if (num1->nb_ref == 0)
         delete_number(num1);
     if (num2->nb_ref == 0)
         delete_number(num2);
+
+    if (diff == NULL)
+        return -1;
 
     push(stack, diff);
     return 0;
@@ -535,6 +680,8 @@ int mul(Stack *stack)
     Number *num1 = pop(stack);
     Number *num2 = pop(stack);
     Number *prod = _mul(num1, num2);
+    if (prod == NULL)
+        return -1;
 
     if (num1->sign == POSITIVE && num2->sign == NEGATIVE)
         prod->sign = NEGATIVE;
@@ -567,7 +714,6 @@ void assignment(char variable, Number *num, Number *variables_list[])
 
 Number* variable_value(char variable, Number *variables_list[])
 {
-    // note : access to non-assigned value should not segfault!!!
     return variables_list[variable - 'a'];
 }
 
@@ -576,6 +722,8 @@ Number* variable_value(char variable, Number *variables_list[])
 Number* create_number()
 {
     Number *num = malloc(sizeof(Number));
+    if (num == NULL)
+        return NULL;
     num->sign = POSITIVE;
     num->last = NULL;
     num->next = NULL;
@@ -618,6 +766,8 @@ void print_number(Number *number)
 
 void print_token(Token *token)
 {
+    if (token == NULL)
+        return;
     switch(token->type)
     {
         case NUMBER:
@@ -676,8 +826,13 @@ int is_valid_number(Number *number)
 {
     // Check if the number doesn't start with zeros except if the number is zero
     // example : 0 is valid, 0245 is not
+    if (number == NULL)
+        return FALSE;
     Digit *digit = number->last;
-    if (digit->value == 0 && digit->next == NULL) {
+    if (digit == NULL) {
+        return FALSE;
+    }
+    else if (digit->value == 0 && digit->next == NULL) {
         return TRUE;
     }
     else {
@@ -696,11 +851,17 @@ int is_valid_number(Number *number)
 Number* _read_number(char first_digit)
 {
     Number *num = (Number*) malloc(sizeof(Number));
+    if (num == NULL)
+        return NULL;
     num->sign = POSITIVE;
     num->nb_ref = 0;
     Digit *current_digit = 
         create_digit(to_digit(first_digit), NULL, NULL);
     Digit *new_digit;
+    if (current_digit == NULL) {
+        free(num);
+        return NULL;
+    }
 
     char c;
     int value;
@@ -916,7 +1077,7 @@ void cleanup(Stack *stack, Number *variables_list[])
 
 void calculator(Stack *stack, Number *variables_list[])
 {
-    printf(">");
+    printf("> ");
     Token token = next_token();
     char character;
     Number *num;
@@ -961,14 +1122,14 @@ void calculator(Stack *stack, Number *variables_list[])
                 else
                     printf("Error wrong number of value entered");
                 empty_stack(stack);
-                printf("\n>");
+                printf("\n> ");
                 break;
 
             case ERROR:
                 printf("Error non-valid entry");
                 empty_stack(stack);
                 goto_next_line();
-                printf("\n>");
+                printf("\n> ");
                 break;
         }
 
