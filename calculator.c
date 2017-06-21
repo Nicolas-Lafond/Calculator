@@ -16,22 +16,23 @@
 int end_of_line = FALSE;
 
 // Stack functions BEGIN
-void push(Stack *s, Number *a)
+void push(Stack *stack, Number *number)
 {
-    a->next = s->top;
-    s->top = a;
-    s->nb_elem++;
+    number->next = stack->top;
+    stack->top = number;
+    stack->nb_elem++;
 }
 
-Number* pop(Stack *s)
+Number* pop(Stack *stack)
 {
-    if (s->nb_elem == 0)
+    if (stack->nb_elem == 0)
         return NULL;
     else {
-        Number *n = s->top;
-        s->top = s->top->next;
-        s->nb_elem--;
-        return n;
+        Number *number = stack->top;
+        stack->top = stack->top->next;
+        number->next = NULL;
+        stack->nb_elem--;
+        return number;
     }
 }
 
@@ -856,6 +857,24 @@ void goto_next_line()
     }
 }
 
+void cleanup(Stack *stack, Number *variables_list[])
+{
+    empty_stack(stack);
+    free(stack);
+
+    Number *number;
+    for (int i = 0; i < 26; i++) {
+        number = variables_list[i];
+        if (number != NULL && number->nb_ref > 1) {
+            for (int j = i + 1; j < 26; j++) {
+                if (variables_list[j] == number)
+                    variables_list[j] = NULL;
+            }
+        }
+        delete_number(number);
+    }
+}
+
 void calculator(Stack *stack, Number *variables_list[])
 {
     printf(">");
@@ -916,11 +935,8 @@ void calculator(Stack *stack, Number *variables_list[])
 
         token = next_token();
     }
-
-    empty_stack(stack);
-    free(stack);
-    //for (int i = 0; i < 26; i++)
-    //    delete_number(variables_list[i]);
+    
+    cleanup(stack, variables_list);
     printf("\ngoodbye!\n");
 }
 

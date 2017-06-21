@@ -100,4 +100,5 @@ Number* _read_number(char first_digit);
 
 Token next_token();
 void goto_next_line();
+void cleanup(Stack *stack, Number *variables_list[]);
 void calculator(Stack *stack, Number *variables_list[]);
