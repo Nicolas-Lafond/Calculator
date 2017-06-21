@@ -398,10 +398,16 @@ Number* _mul(Number *num1, Number *num2)
  */
 int greater_equal (Number *num1, Number *num2)
 {
+    if (num1 == NULL || num2 == NULL)
+        return FALSE;
+
     Digit *digit1, *digit2;
 
     digit1 = num1->last;
     digit2 = num2->last;
+
+    if (digit1 == NULL || digit2 == NULL)
+        return FALSE;
 
     // first we check that they have the same number of digits
     while (digit1->next != NULL) {
@@ -411,7 +417,9 @@ int greater_equal (Number *num1, Number *num2)
         digit2 = digit2->next;
     }
 
-    if (digit2->next != NULL)
+    if (digit2 == NULL)
+        return TRUE;
+    else if (digit2->next != NULL)
         return FALSE;
 
     // At this point we know that the two numbers are the same length
@@ -664,8 +672,27 @@ int is_lower_case(char c)
     return (c >= 'a') && (c <= 'z');
 }
 
+int is_valid_number(Number *number)
+{
+    // Check if the number doesn't start with zeros except if the number is zero
+    // example : 0 is valid, 0245 is not
+    Digit *digit = number->last;
+    if (digit->value == 0 && digit->next == NULL) {
+        return TRUE;
+    }
+    else {
+        while (digit->next != NULL)
+            digit = digit->next;
+        if (digit->value == 0)
+            return FALSE;
+        else
+            return TRUE;
+    }
+}
+
 // create a number by reading from stdin
 // this function should only be called by next_token()
+// return NULL on error
 Number* _read_number(char first_digit)
 {
     Number *num = (Number*) malloc(sizeof(Number));
@@ -684,13 +711,25 @@ Number* _read_number(char first_digit)
            if (c == ' ' || c == '\t') {
                current_digit->previous = NULL;
                num->last = current_digit;
-               return num;
+               if (is_valid_number(num)) {
+                   return num;
+               }
+               else {
+                   delete_number(num);
+                   return NULL;
+               }
            }
            else if (c == '\n') {
                current_digit->previous = NULL;
                num->last = current_digit;
                end_of_line = TRUE;
-               return num;
+               if (is_valid_number(num)) {
+                   return num;
+               }
+               else {
+                   delete_number(num);
+                   return NULL;
+               }
            }
            else { // ERROR
                delete_number(num);

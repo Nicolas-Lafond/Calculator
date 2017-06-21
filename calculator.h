@@ -96,6 +96,7 @@ void print_token(Token *token);
 int is_digit(char c);
 int to_digit(char c);
 int is_lower_case(char c);
+int is_valid_number(Number *number);
 Number* _read_number(char first_digit);
 
 Token next_token();
