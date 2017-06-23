@@ -1,3 +1,6 @@
+#ifndef CALCULATOR_H
+#define CALCULATOR_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -103,3 +106,6 @@ Token next_token();
 void goto_next_line();
 void cleanup(Stack *stack, Number *variables_list[]);
 void calculator(Stack *stack, Number *variables_list[]);
+
+
+#endif
