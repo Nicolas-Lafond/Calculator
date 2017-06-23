@@ -531,6 +531,17 @@ Number* _mul(Number *num1, Number *num2)
     return product;
 }
 
+Number* _div(Number *num1, Number *num2)
+{
+    // TODO
+    return NULL;
+}
+Number* _mod(Number *num1, Number *num2)
+{
+    // TODO
+    return NULL;
+}
+
 /*
  * This function returns TRUE if |num1| >= |num2|
  * and FALSE otherwise
@@ -699,6 +710,57 @@ int mul(Stack *stack)
         delete_number(num2);
 
     push(stack, prod);
+    return 0;
+}
+
+int divide(Stack *stack)
+{
+    if (stack->nb_elem < 2)
+        return -1;
+
+    Number *num1 = pop(stack);
+    Number *num2 = pop(stack);
+    Number *quot = _div(num1, num2);
+    if (quot == NULL)
+        return -1;
+
+    if (num1->sign == POSITIVE && num2->sign == NEGATIVE)
+        quot->sign = NEGATIVE;
+    else if (num1->sign == NEGATIVE && num2->sign == POSITIVE)
+        quot->sign = NEGATIVE;
+
+    if (num1->nb_ref == 0)
+        delete_number(num1);
+    if (num2->nb_ref == 0)
+        delete_number(num2);
+
+    push(stack, quot);
+    return 0;
+}
+
+int mod(Stack *stack)
+{
+
+    if (stack->nb_elem < 2)
+        return -1;
+
+    Number *num1 = pop(stack);
+    Number *num2 = pop(stack);
+    Number *rest = _mod(num1, num2);
+    if (rest == NULL)
+        return -1;
+
+    if (num1->sign == POSITIVE && num2->sign == NEGATIVE)
+        rest->sign = NEGATIVE;
+    else if (num1->sign == NEGATIVE && num2->sign == POSITIVE)
+        rest->sign = NEGATIVE;
+
+    if (num1->nb_ref == 0)
+        delete_number(num1);
+    if (num2->nb_ref == 0)
+        delete_number(num2);
+
+    push(stack, rest);
     return 0;
 }
 
@@ -1011,6 +1073,32 @@ Token next_token()
                 token.type = ERROR;
             }
             break;
+        case '/':
+            c = getchar();
+            if (c == ' ' || c == '\t') {
+                token.type = DIVIDE;
+            }
+            else if (c == '\n') {
+                end_of_line = TRUE;
+                token.type = DIVIDE;
+            }
+            else {
+                token.type = ERROR;
+            }
+            break;
+        case '%':
+            c = getchar();
+            if (c == ' ' || c == '\t') {
+                token.type = MODULO;
+            }
+            else if (c == '\n') {
+                end_of_line = TRUE;
+                token.type = MODULO;
+            }
+            else {
+                token.type = ERROR;
+            }
+            break;
         case '=':
             c = getchar();
             if (is_lower_case(c)) {
@@ -1104,6 +1192,14 @@ void calculator(Stack *stack, Number *variables_list[])
 
             case MULTIPLY:
                 mul(stack);
+                break;
+
+            case DIVIDE:
+                divide(stack);
+                break;
+
+            case MODULO:
+                mod(stack);
                 break;
                 
             case ASSIGNMENT:
