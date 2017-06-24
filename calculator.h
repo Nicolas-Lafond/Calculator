@@ -75,6 +75,7 @@ Number* copy_number(Number *number);
 int append_numbers(Number *number1, Number *number2);
 void empty_stack(Stack *s);
 int is_in_stack(Number *number, Stack *stack);
+void remove_front_zeros(Number *number);
 int greater_equal(Number *number1, Number *number2);
 int greater_equal_first_digit(Number *number1, Number *number2);
 void reverse_sign(Number *number);

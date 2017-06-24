@@ -238,6 +238,32 @@ int greater_equal_first_digit(Number *number1, Number *number2)
         return FALSE;
 }
 
+void remove_front_zeros(Number *number)
+{
+    if (number == NULL)
+        return;
+    Digit *digit = number->last;
+    if (digit == NULL)
+        return;
+
+    // goto to the leftmost digit
+    while (digit->next != NULL)
+        digit = digit->next;
+
+    int is_zero = TRUE;
+    while (is_zero) {
+        if (digit->value == 0) {
+            digit = digit->previous;
+            free(digit->next);
+            digit->next = NULL;
+        }
+        else {
+            is_zero = FALSE;
+        }
+    }
+
+}
+
 /* 
  * Beginning of arithmetic operations section
  * functions with an underscore as first character that for
@@ -413,7 +439,7 @@ Number* _sub(Number *num1, Number *num2)
         current_digit = digit_diff;
     }
 
-
+    remove_front_zeros(diff);
     return diff;
 }
 

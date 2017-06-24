@@ -188,6 +188,12 @@ void test_sub()
     diff = _sub(num1, num2);
     print_number(diff); // should print 28347
     printf("\n");
+
+    num1 = create_number_from_int(10);
+    num2 = create_number_from_int(2);
+    diff = _sub(num1, num2);
+    print_number(diff); // should print 6
+    printf("\n");
 }
 
 void test_greater_equal()
@@ -256,11 +262,11 @@ int main(int argc, char* argv[])
     //test_tokens();
     //test_numbers();
     //test_add();
-    //test_sub();
+    test_sub();
     //test_greater_equal();
     //test_to_digit();
     //test_create_number_from_int();
     //test_number_of_digits();
     //test_copy_number();
-    test_increment();
+    //test_increment();
 }
