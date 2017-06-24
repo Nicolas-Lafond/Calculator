@@ -71,10 +71,12 @@ Digit* create_digit(int value, Digit *next, Digit *previous);
 Digit* nth_digit(int number, int position);
 int number_of_digits(int number);
 Number* create_number_from_int(int num);
+Number* copy_number(Number *number);
 int append_numbers(Number *number1, Number *number2);
 void empty_stack(Stack *s);
 int is_in_stack(Number *number, Stack *stack);
 int greater_equal(Number *number1, Number *number2);
+int greater_equal_first_digit(Number *number1, Number *number2);
 void reverse_sign(Number *number);
 
 // arithmetics functions
@@ -85,6 +87,7 @@ Number* _sub(Number *num1, Number *num2);
 Digit* mul_digits(Digit *digit1, Digit *digit2, int *carry);
 Number* _multiply_by_digit(Number *number, Digit *digit);
 Number* _mul(Number *num1, Number *num2);
+void division(Number *divident, Number *divisor, Number *quotient, Number *remainder);
 Number* _div(Number *num1, Number *num2);
 Number* _mod(Number *num1, Number *num2);
 int is_zero(Number *number);

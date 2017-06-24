@@ -189,14 +189,27 @@ void test_greater_equal()
     assert(greater_equal(num2, num1) == FALSE);
 }
 
+void test_copy_number()
+{
+    Number *num1, *num2;
+
+    num1 = create_number_from_int(12345);
+    num2 = copy_number(num1);
+    print_number(num1);
+    printf("\n");
+    print_number(num2);
+    printf("\n");
+}
+
 int main(int argc, char* argv[])
 {
     //test_tokens();
     //test_numbers();
     //test_add();
     //test_sub();
-    test_greater_equal();
+    //test_greater_equal();
     //test_to_digit();
     //test_create_number_from_int();
     //test_number_of_digits();
+    test_copy_number();
 }

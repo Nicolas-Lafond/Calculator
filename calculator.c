@@ -120,6 +120,40 @@ Number* create_number_from_int(int num)
     return number;
 }
 
+Number* copy_number(Number *number)
+{
+    if (number == NULL)
+        return NULL;
+    Number *copy;
+    Digit *number_digit, *copy_digit;
+    number_digit = number->last;
+    copy = malloc(sizeof(Number));
+    if (copy == NULL)
+        return NULL;
+    copy->last = malloc(sizeof(Digit));
+    if (copy->last == NULL)
+        delete_number(copy);
+    copy->sign = number->sign;
+    copy_digit = copy->last;
+    copy_digit->previous = NULL;
+    copy_digit->value = number_digit->value;
+    number_digit = number_digit->next;
+
+    while (number_digit != NULL) {
+        copy_digit->next = malloc(sizeof(Digit));
+        if (copy_digit->next == NULL) {
+            delete_number(copy);
+            return NULL;
+        }
+        copy_digit->next->previous = copy_digit;
+        copy_digit = copy_digit->next;
+        copy_digit->value = number_digit->value;
+        number_digit = number_digit->next;
+    }
+
+    return copy;
+}
+
 // append number2 to number1
 // number1 is changed but number2 is not
 // return -1 on error and 0 otherwise
@@ -181,6 +215,27 @@ int is_in_stack(Number *number, Stack *stack)
     }
 
     return FALSE;
+}
+
+int greater_equal_first_digit(Number *number1, Number *number2)
+{
+    if (number1 == NULL || number2 == NULL)
+        return FALSE;
+    Digit *digit1, *digit2;
+    digit1 = number1->last;
+    digit2 = number2->last;
+    if (digit1 == NULL || digit2 == NULL)
+        return FALSE;
+
+    while (digit1->next != NULL)
+        digit1 = digit1->next;
+    while (digit2->next != NULL)
+        digit2 = digit2->next;
+
+    if (digit1->value >= digit2->value)
+        return TRUE;
+    else
+        return FALSE;
 }
 
 /* 
@@ -531,15 +586,30 @@ Number* _mul(Number *num1, Number *num2)
     return product;
 }
 
+void _division(Number *divident, Number *divisor, Number *quotient, Number *remainder)
+{
+    if (divident == NULL || divisor == NULL)
+        return;
+    quotient = malloc(sizeof(Number));
+    remainder = malloc(sizeof(Number));
+
+}
+
 Number* _div(Number *num1, Number *num2)
 {
-    // TODO
-    return NULL;
+    Number *quotient, *remainder;
+    _division(num1, num2, quotient, remainder);
+    free(remainder);
+
+    return quotient;
 }
 Number* _mod(Number *num1, Number *num2)
 {
-    // TODO
-    return NULL;
+    Number *quotient, *remainder;
+    _division(num1, num2, quotient, remainder);
+    free(quotient);
+
+    return remainder;
 }
 
 /*
