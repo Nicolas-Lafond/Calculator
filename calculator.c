@@ -586,28 +586,92 @@ Number* _mul(Number *num1, Number *num2)
     return product;
 }
 
+// increment the number by one 
+void increment(Number *number)
+{
+    Number *one, *tempo;
+    if (number == NULL)
+        return;
+    if (number->last == NULL)
+        return;
+
+    // Check if number is -1
+    if (number->sign == NEGATIVE && 
+        number->last->value == 1 && 
+        number->last->next == NULL) {
+        delete_number(number);
+        number = create_number_from_int(0);
+        return;
+    }
+
+    one = create_number_from_int(1);
+    if (one == NULL)
+        return;
+
+    if (number->sign == POSITIVE) {
+        tempo = _add(number, one);
+        tempo->sign = POSITIVE;
+    }
+    else {
+        tempo = _sub(number, one);
+        tempo->sign = NEGATIVE;
+    }
+
+    delete_number(number);
+    delete_number(one);
+    number = tempo;
+}
+
 void _division(Number *divident, Number *divisor, Number *quotient, Number *remainder)
 {
+    // Here we consider that all numbers are positive
     if (divident == NULL || divisor == NULL)
         return;
-    quotient = malloc(sizeof(Number));
-    remainder = malloc(sizeof(Number));
+
+    Number *tempo;
+
+    quotient = create_number_from_int(0);
+    if (quotient == NULL)
+        return;
+    quotient->sign = POSITIVE;
+
+    remainder = copy_number(divident);
+    if (remainder == NULL) {
+        free(quotient);
+        return;
+    }
+    remainder->sign = POSITIVE;
+
+    while (greater_equal(remainder, divisor)) {
+        increment(quotient);
+        tempo = _sub(remainder, divisor);
+        delete_number(remainder);
+        remainder = tempo;
+    }
 
 }
 
 Number* _div(Number *num1, Number *num2)
 {
+    if (num1 == NULL || num2 == NULL)
+        return NULL;
+
     Number *quotient, *remainder;
     _division(num1, num2, quotient, remainder);
     free(remainder);
+    if (num1->sign != num2->sign)
+        quotient->sign = NEGATIVE;
 
     return quotient;
 }
+
 Number* _mod(Number *num1, Number *num2)
 {
     Number *quotient, *remainder;
     _division(num1, num2, quotient, remainder);
     free(quotient);
+    if (num1->sign != num2->sign)
+        remainder->sign = NEGATIVE;
 
     return remainder;
 }

@@ -87,6 +87,7 @@ Number* _sub(Number *num1, Number *num2);
 Digit* mul_digits(Digit *digit1, Digit *digit2, int *carry);
 Number* _multiply_by_digit(Number *number, Digit *digit);
 Number* _mul(Number *num1, Number *num2);
+void increment(Number *number);
 void division(Number *divident, Number *divisor, Number *quotient, Number *remainder);
 Number* _div(Number *num1, Number *num2);
 Number* _mod(Number *num1, Number *num2);
