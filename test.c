@@ -27,6 +27,18 @@ void test_create_number_from_int()
     num = create_number_from_int(4);
     print_number(num);
     printf("\n");
+
+    num = create_number_from_int(1);
+    print_number(num);
+    printf("\n");
+
+    num = create_number_from_int(-1);
+    print_number(num);
+    printf("\n");
+
+    num = create_number_from_int(0);
+    print_number(num);
+    printf("\n");
 }
 
 void test_number_of_digits()
@@ -201,6 +213,44 @@ void test_copy_number()
     printf("\n");
 }
 
+void test_increment()
+{
+    Number *number = create_number_from_int(0);
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    printf("\n");
+
+    number = create_number_from_int(3);
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    printf("\n");
+
+    number = create_number_from_int(356);
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    increment(number); print_number(number); printf("\n");
+    printf("\n");
+}
+
 int main(int argc, char* argv[])
 {
     //test_tokens();
@@ -211,5 +261,6 @@ int main(int argc, char* argv[])
     //test_to_digit();
     //test_create_number_from_int();
     //test_number_of_digits();
-    test_copy_number();
+    //test_copy_number();
+    test_increment();
 }

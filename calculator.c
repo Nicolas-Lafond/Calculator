@@ -589,40 +589,40 @@ Number* _mul(Number *num1, Number *num2)
 // increment the number by one 
 void increment(Number *number)
 {
-    Number *one, *tempo;
     if (number == NULL)
         return;
-    if (number->last == NULL)
-        return;
 
-    // Check if number is -1
-    if (number->sign == NEGATIVE && 
-        number->last->value == 1 && 
-        number->last->next == NULL) {
-        delete_number(number);
-        number = create_number_from_int(0);
+    int carry = 0;
+    int new_value;
+    Digit *digit = number->last;
+    if (digit == NULL)
         return;
-    }
-
-    one = create_number_from_int(1);
-    if (one == NULL)
-        return;
-
-    if (number->sign == POSITIVE) {
-        tempo = _add(number, one);
-        tempo->sign = POSITIVE;
+    if (digit->value == 9) {
+        digit->value = 0;
+        carry = 1;
     }
     else {
-        tempo = _sub(number, one);
-        tempo->sign = NEGATIVE;
+        digit->value++;
     }
 
-    delete_number(number);
-    delete_number(one);
-    number = tempo;
+    while (carry == 1 && digit->next != NULL) {
+        digit = digit->next;
+        new_value = digit->value + carry;
+        if (new_value == 10) {
+            digit->value = 0;
+        }
+        else {
+            digit->value = new_value;
+            carry = 0;
+        }
+    }
+
+    if (carry == 1)
+        digit->next = create_digit(1, NULL, digit);
 }
 
-void _division(Number *divident, Number *divisor, Number *quotient, Number *remainder)
+void _division(Number *divident, Number *divisor, 
+                Number **quotient, Number **remainder)
 {
     // Here we consider that all numbers are positive
     if (divident == NULL || divisor == NULL)
@@ -630,25 +630,24 @@ void _division(Number *divident, Number *divisor, Number *quotient, Number *rema
 
     Number *tempo;
 
-    quotient = create_number_from_int(0);
-    if (quotient == NULL)
+    *quotient = create_number_from_int(0);
+    if (*quotient == NULL)
         return;
-    quotient->sign = POSITIVE;
+    (*quotient)->sign = POSITIVE;
 
-    remainder = copy_number(divident);
-    if (remainder == NULL) {
-        free(quotient);
+    *remainder = copy_number(divident);
+    if (*remainder == NULL) {
+        free(*quotient);
         return;
     }
-    remainder->sign = POSITIVE;
+    (*remainder)->sign = POSITIVE;
 
-    while (greater_equal(remainder, divisor)) {
-        increment(quotient);
-        tempo = _sub(remainder, divisor);
-        delete_number(remainder);
-        remainder = tempo;
+    while (greater_equal(*remainder, divisor)) {
+        increment(*quotient);
+        tempo = _sub(*remainder, divisor);
+        delete_number(*remainder);
+        *remainder = tempo;
     }
-
 }
 
 Number* _div(Number *num1, Number *num2)
@@ -657,7 +656,7 @@ Number* _div(Number *num1, Number *num2)
         return NULL;
 
     Number *quotient, *remainder;
-    _division(num1, num2, quotient, remainder);
+    _division(num1, num2, &quotient, &remainder);
     free(remainder);
     if (num1->sign != num2->sign)
         quotient->sign = NEGATIVE;
@@ -668,7 +667,7 @@ Number* _div(Number *num1, Number *num2)
 Number* _mod(Number *num1, Number *num2)
 {
     Number *quotient, *remainder;
-    _division(num1, num2, quotient, remainder);
+    _division(num1, num2, &quotient, &remainder);
     free(quotient);
     if (num1->sign != num2->sign)
         remainder->sign = NEGATIVE;
