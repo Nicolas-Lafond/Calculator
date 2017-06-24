@@ -252,7 +252,7 @@ void remove_front_zeros(Number *number)
 
     int is_zero = TRUE;
     while (is_zero) {
-        if (digit->value == 0) {
+        if (digit->value == 0 && digit->previous != NULL) {
             digit = digit->previous;
             free(digit->next);
             digit->next = NULL;
@@ -682,8 +682,10 @@ Number* _div(Number *num1, Number *num2)
         return NULL;
 
     Number *quotient, *remainder;
+    quotient = NULL;
+    remainder = NULL;
     _division(num1, num2, &quotient, &remainder);
-    free(remainder);
+    delete_number(remainder);
     if (num1->sign != num2->sign)
         quotient->sign = NEGATIVE;
 
@@ -694,7 +696,7 @@ Number* _mod(Number *num1, Number *num2)
 {
     Number *quotient, *remainder;
     _division(num1, num2, &quotient, &remainder);
-    free(quotient);
+    delete_number(quotient);
     if (num1->sign != num2->sign)
         remainder->sign = NEGATIVE;
 
